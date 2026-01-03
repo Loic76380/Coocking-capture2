@@ -1,0 +1,156 @@
+{
+  "identity": {
+    "name": "E1: The Anti-AI Designer",
+    "mission": "Create a recipe extraction app that feels like a high-end digital cookbook, not a database.",
+    "principles": [
+      "Fusion: Cookbook Aesthetics x SaaS Functionality",
+      "Emotion: Warmth, Appetite, Clarity",
+      "Content: The Recipe is the Hero",
+      "Negative Space: Breathing room for ingredients",
+      "Contrast: Crisp text against organic textures"
+    ]
+  },
+  "theme": {
+    "mode": "light",
+    "archetype": "Organic & Earthy",
+    "palette": {
+      "base": {
+        "background": "#F9F8F6",
+        "foreground": "#1C1917",
+        "card": "#FFFFFF",
+        "card_foreground": "#1C1917"
+      },
+      "primary": {
+        "default": "#3A5A40",
+        "foreground": "#FFFFFF",
+        "hover": "#344E41"
+      },
+      "secondary": {
+        "default": "#DAD7CD",
+        "foreground": "#3A5A40"
+      },
+      "accent": {
+        "default": "#BC4749",
+        "foreground": "#FFFFFF",
+        "description": "Use for primary CTAs (Save, Extract) to stimulate appetite"
+      },
+      "muted": {
+        "default": "#F5F5F4",
+        "foreground": "#78716C"
+      },
+      "border": "#E7E5E4",
+      "input": "#E7E5E4",
+      "ring": "#3A5A40"
+    },
+    "gradients": {
+      "hero": "linear-gradient(180deg, rgba(58,90,64,0.05) 0%, rgba(249,248,246,0) 100%)",
+      "loading": "linear-gradient(90deg, #DAD7CD 0%, #A3B18A 50%, #DAD7CD 100%)"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": {
+        "family": "Playfair Display, serif",
+        "weights": ["400", "600", "700"],
+        "usage": "Recipe titles, Section headers, Hero text"
+      },
+      "body": {
+        "family": "Manrope, sans-serif",
+        "weights": ["400", "500", "600"],
+        "usage": "Instructions, UI elements, Navigation"
+      },
+      "mono": {
+        "family": "JetBrains Mono, monospace",
+        "weights": ["400"],
+        "usage": "Quantities, Timers, Metrics"
+      }
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl lg:text-6xl tracking-tight leading-tight font-serif",
+      "h2": "text-3xl md:text-4xl tracking-tight font-serif",
+      "h3": "text-2xl font-serif font-medium",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed text-stone-600",
+      "caption": "text-sm text-stone-500 uppercase tracking-widest"
+    }
+  },
+  "layout": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "spacing": {
+      "section": "py-16 md:py-24",
+      "element": "gap-6 md:gap-8"
+    },
+    "grids": {
+      "bento_directory": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8",
+      "recipe_view": "grid grid-cols-1 lg:grid-cols-12 gap-12"
+    },
+    "radius": {
+      "default": "rounded-xl",
+      "card": "rounded-2xl",
+      "button": "rounded-full"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-full font-medium transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+      "secondary": "bg-secondary/20 text-primary hover:bg-secondary/30 h-12 px-6 rounded-full font-medium transition-all",
+      "ghost": "hover:bg-stone-100 text-stone-600 hover:text-stone-900 rounded-lg"
+    },
+    "cards": {
+      "recipe": "group relative bg-white border border-stone-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1",
+      "ingredient": "flex items-center p-4 bg-stone-50 rounded-xl border border-transparent hover:border-stone-200 transition-colors"
+    },
+    "inputs": {
+      "url_bar": "h-14 pl-6 pr-4 rounded-full border-2 border-stone-200 focus:border-primary focus:ring-4 focus:ring-primary/10 text-lg shadow-sm transition-all"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "soft": "0 4px 20px -2px rgba(58, 90, 64, 0.08)",
+      "float": "0 20px 40px -4px rgba(58, 90, 64, 0.12)"
+    },
+    "textures": {
+      "grain": "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E\")"
+    },
+    "glass": "bg-white/80 backdrop-blur-md border border-white/20"
+  },
+  "assets": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1766596737206-214abffe65bf?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "empty_state": "https://images.unsplash.com/photo-1563942190294-a564f2170cb9?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "loading_chef": "https://images.unsplash.com/photo-1757621788643-395dc581dc6d?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "placeholder_food": "https://images.unsplash.com/photo-1711633648859-1eac3e5969b9?crop=entropy&cs=srgb&fm=jpg&q=85"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "preferred": ["ChefHat", "Utensils", "Clock", "Users", "Flame", "Search", "ArrowRight", "Save", "Share2", "Mail"]
+    }
+  },
+  "motion": {
+    "transitions": {
+      "default": "transition-all duration-300 ease-out",
+      "slow": "transition-all duration-700 ease-in-out"
+    },
+    "animations": {
+      "fade_in": "animate-in fade-in duration-500",
+      "slide_up": "animate-in slide-in-from-bottom-4 fade-in duration-500",
+      "scale_in": "animate-in zoom-in-95 fade-in duration-300"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add '@import url(\"https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Playfair+Display:wght@400;600;700&family=JetBrains+Mono&display=swap\");' to index.css",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js with the colors and fonts defined in this JSON.",
+    "3. USE SHADCN: Customize existing Shadcn components (Button, Input, Card) to match the 'rounded-full' and 'organic' aesthetic.",
+    "4. LAYOUT: Use the 'Bento' grid for the recipe directory. Don't just list them.",
+    "5. EXTRACTION VIEW: Create a 'Focus Mode' where the recipe content is center stage, distraction-free.",
+    "6. EMAIL MODAL: Make it feel like sending a postcard or a gift, not a form submission.",
+    "7. DATA-TESTID: Ensure every interactive element has a data-testid attribute."
+  ],
+  "universal_guidelines": [
+    "Avoid generic 'SaaS Blue' at all costs.",
+    "Use 2-3x more whitespace than you think is necessary.",
+    "Never use pure black (#000000). Use #1C1917 or similar.",
+    "Interactive elements must have clear hover states.",
+    "Images must be high quality and appetizing."
+  ]
+}
