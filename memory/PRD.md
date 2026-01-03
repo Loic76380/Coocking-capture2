@@ -31,12 +31,20 @@ Application permettant de récupérer une recette sur une page Web, conserver le
 - Recipe detail page with ingredients, quantities, steps
 - Email sending functionality (requires valid Resend API key)
 - Beautiful organic/earthy design theme
-- **PWA Configuration**:
-  - Web App Manifest (manifest.json)
-  - Service Worker for offline caching
-  - Install prompt banner
-  - App icons (SVG format)
-  - iOS/Android compatible
+- **PWA Configuration** for Android/iOS installation
+- **Authentication System**:
+  - User registration and login (JWT)
+  - Private recipes per user
+  - Account management page
+- **Filter/Category System**:
+  - Default filters: Apéro, Entrées, Plats, Desserts, Salé, Sucré, Viande, Poisson
+  - Custom filters creation with color picker
+  - Tag recipes with categories
+  - Filter recipes in directory view
+- **UI Improvements**:
+  - Smaller recipe tiles in directory
+  - 2-row filter layout
+  - Reset filters button
 
 ## API Endpoints
 - POST /api/recipes/extract - Extraire recette depuis URL

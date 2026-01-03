@@ -58,6 +58,9 @@ DEFAULT_FILTERS = [
     {"id": "entrees", "name": "Entrées", "row": 1, "color": "#10B981"},
     {"id": "plats", "name": "Plats", "row": 1, "color": "#3B82F6"},
     {"id": "desserts", "name": "Desserts", "row": 1, "color": "#EC4899"},
+    {"id": "salade", "name": "Salade", "row": 1, "color": "#84CC16"},
+    {"id": "petites-envies", "name": "Petites envies", "row": 1, "color": "#F97316"},
+    {"id": "sauces", "name": "Sauces", "row": 1, "color": "#A855F7"},
     {"id": "sale", "name": "Salé", "row": 2, "color": "#8B5CF6"},
     {"id": "sucre", "name": "Sucré", "row": 2, "color": "#F472B6"},
     {"id": "viande", "name": "Viande", "row": 2, "color": "#EF4444"},
@@ -132,7 +135,14 @@ class RecipeCreate(BaseModel):
     url: str
 
 class RecipeUpdate(BaseModel):
-    tags: List[str] = []
+    tags: Optional[List[str]] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    prep_time: Optional[str] = None
+    cook_time: Optional[str] = None
+    servings: Optional[str] = None
+    ingredients: Optional[List[Ingredient]] = None
+    steps: Optional[List[RecipeStep]] = None
 
 class EmailRequest(BaseModel):
     recipient_email: EmailStr
@@ -552,10 +562,32 @@ async def get_recipe(recipe_id: str, current_user: dict = Depends(get_current_us
 
 @api_router.put("/recipes/{recipe_id}", response_model=Recipe)
 async def update_recipe(recipe_id: str, input: RecipeUpdate, current_user: dict = Depends(get_current_user)):
-    """Update recipe tags"""
+    """Update recipe (tags, ingredients, steps, etc.)"""
+    update_data = {}
+    
+    if input.tags is not None:
+        update_data['tags'] = input.tags
+    if input.title is not None:
+        update_data['title'] = input.title
+    if input.description is not None:
+        update_data['description'] = input.description
+    if input.prep_time is not None:
+        update_data['prep_time'] = input.prep_time
+    if input.cook_time is not None:
+        update_data['cook_time'] = input.cook_time
+    if input.servings is not None:
+        update_data['servings'] = input.servings
+    if input.ingredients is not None:
+        update_data['ingredients'] = [ing.model_dump() for ing in input.ingredients]
+    if input.steps is not None:
+        update_data['steps'] = [step.model_dump() for step in input.steps]
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Aucune modification fournie")
+    
     result = await db.recipes.update_one(
         {"id": recipe_id, "user_id": current_user['id']},
-        {"$set": {"tags": input.tags}}
+        {"$set": update_data}
     )
     
     if result.matched_count == 0:
