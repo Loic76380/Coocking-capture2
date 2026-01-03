@@ -646,6 +646,8 @@ Ingrédients:
         
         # Recipe tests (authenticated)
         self.test_recipe_extraction_authenticated()
+        self.test_create_manual_recipe()
+        self.test_upload_document_recipe()
         self.test_get_user_recipes()
         self.test_update_recipe_ingredients()
         self.test_update_recipe_steps()
