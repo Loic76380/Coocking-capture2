@@ -638,6 +638,7 @@ async def extract_recipe(input: RecipeCreate, current_user: dict = Depends(get_c
             title=recipe_data.get('title', 'Recette sans titre'),
             description=recipe_data.get('description'),
             source_url=input.url,
+            source_type="url",
             image_url=recipe_data.get('image_url'),
             prep_time=recipe_data.get('prep_time'),
             cook_time=recipe_data.get('cook_time'),
