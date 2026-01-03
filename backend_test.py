@@ -383,6 +383,8 @@ class RecipeAPITester:
         except Exception as e:
             self.log_test("Update Recipe Steps", False, str(e))
             return False
+
+    def test_update_recipe_tags(self):
         """Test updating recipe tags"""
         if not self.created_recipe_id:
             self.log_test("Update Recipe Tags", False, "No recipe ID available")
