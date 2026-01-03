@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Recipe Extraction App
-Tests all endpoints: root, extract, CRUD operations, email sending
+Backend API Testing for Recipe Capture App with Authentication
+Tests all endpoints: auth, filters, recipes with user privacy
 """
 
 import requests
@@ -9,6 +9,7 @@ import sys
 import json
 from datetime import datetime
 import time
+import uuid
 
 class RecipeAPITester:
     def __init__(self, base_url="https://cooking-capture.preview.emergentagent.com"):
@@ -18,6 +19,12 @@ class RecipeAPITester:
         self.tests_passed = 0
         self.test_results = []
         self.created_recipe_id = None
+        self.auth_token = None
+        self.user_id = None
+        self.test_user_email = f"test_{uuid.uuid4().hex[:8]}@test.com"
+        self.test_user_password = "test123"
+        self.test_user_name = "Test User"
+        self.custom_filter_id = None
 
     def log_test(self, name, success, details=""):
         """Log test result"""
