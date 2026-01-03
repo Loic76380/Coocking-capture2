@@ -196,6 +196,125 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
 # ==================== HELPER FUNCTIONS ====================
 
+def extract_text_from_pdf(file_content: bytes) -> str:
+    """Extract text from PDF file"""
+    from pypdf import PdfReader
+    try:
+        pdf = PdfReader(io.BytesIO(file_content))
+        text = ""
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
+        return text[:15000]
+    except Exception as e:
+        logger.error(f"Error extracting PDF: {e}")
+        return ""
+
+def extract_text_from_docx(file_content: bytes) -> str:
+    """Extract text from Word document"""
+    from docx import Document
+    try:
+        doc = Document(io.BytesIO(file_content))
+        text = "\n".join([para.text for para in doc.paragraphs])
+        return text[:15000]
+    except Exception as e:
+        logger.error(f"Error extracting DOCX: {e}")
+        return ""
+
+def extract_text_from_image(file_content: bytes) -> str:
+    """For images, we'll use AI vision - return empty for text extraction"""
+    return ""
+
+async def extract_recipe_from_document(file_content: bytes, filename: str, content_type: str) -> dict:
+    """Extract recipe from uploaded document using AI"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    api_key = os.environ.get('EMERGENT_LLM_KEY')
+    if not api_key:
+        raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")
+    
+    # Extract text based on file type
+    text_content = ""
+    is_image = False
+    
+    if content_type == "application/pdf" or filename.lower().endswith('.pdf'):
+        text_content = extract_text_from_pdf(file_content)
+    elif content_type in ["application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"] or filename.lower().endswith(('.docx', '.doc')):
+        text_content = extract_text_from_docx(file_content)
+    elif content_type.startswith("image/") or filename.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+        is_image = True
+    elif content_type == "text/plain" or filename.lower().endswith('.txt'):
+        text_content = file_content.decode('utf-8', errors='ignore')[:15000]
+    else:
+        raise HTTPException(status_code=400, detail=f"Type de fichier non supporté: {content_type}")
+    
+    if not text_content and not is_image:
+        raise HTTPException(status_code=400, detail="Impossible d'extraire le texte du document")
+    
+    chat = LlmChat(
+        api_key=api_key,
+        session_id=f"recipe-doc-{uuid.uuid4()}",
+        system_message="""Tu es un assistant expert en extraction de recettes de cuisine.
+Ton rôle est d'analyser le contenu d'un document et d'extraire les informations de la recette.
+Tu dois TOUJOURS répondre en JSON valide, sans texte supplémentaire.
+
+Format de réponse OBLIGATOIRE:
+{
+    "title": "Nom de la recette",
+    "description": "Description courte (1-2 phrases)",
+    "prep_time": "Temps de préparation (ex: 20 minutes)",
+    "cook_time": "Temps de cuisson (ex: 45 minutes)",
+    "servings": "Nombre de portions (ex: 4 personnes)",
+    "ingredients": [
+        {"name": "Nom ingrédient", "quantity": "200", "unit": "g"},
+        {"name": "Autre ingrédient", "quantity": "2", "unit": ""}
+    ],
+    "steps": [
+        {"step_number": 1, "instruction": "Première étape..."},
+        {"step_number": 2, "instruction": "Deuxième étape..."}
+    ]
+}
+
+Si une information n'est pas disponible, utilise null ou une chaîne vide."""
+    ).with_model("openai", "gpt-4o")
+    
+    if is_image:
+        # For images, use vision capabilities
+        import base64
+        b64_image = base64.b64encode(file_content).decode('utf-8')
+        user_message = UserMessage(
+            text="Analyse cette image de recette et extrait toutes les informations. Réponds UNIQUEMENT avec le JSON de la recette.",
+            images=[f"data:{content_type};base64,{b64_image}"]
+        )
+    else:
+        user_message = UserMessage(
+            text=f"""Analyse ce document et extrait la recette de cuisine.
+Nom du fichier: {filename}
+
+Contenu du document:
+{text_content}
+
+Réponds UNIQUEMENT avec le JSON de la recette extraite."""
+        )
+    
+    response = await chat.send_message(user_message)
+    
+    import json
+    try:
+        clean_response = response.strip()
+        if clean_response.startswith('```json'):
+            clean_response = clean_response[7:]
+        if clean_response.startswith('```'):
+            clean_response = clean_response[3:]
+        if clean_response.endswith('```'):
+            clean_response = clean_response[:-3]
+        clean_response = clean_response.strip()
+        
+        recipe_data = json.loads(clean_response)
+        return recipe_data
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse AI response: {response}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'analyse: {str(e)}")
+
 async def fetch_webpage(url: str) -> str:
     """Fetch webpage content"""
     async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as http_client:
