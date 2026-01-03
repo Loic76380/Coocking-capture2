@@ -122,7 +122,8 @@ class Recipe(BaseModel):
     user_id: str
     title: str
     description: Optional[str] = None
-    source_url: str
+    source_url: Optional[str] = None  # Optional for manual recipes
+    source_type: str = "url"  # "url", "manual", "document"
     image_url: Optional[str] = None
     prep_time: Optional[str] = None
     cook_time: Optional[str] = None
@@ -134,6 +135,16 @@ class Recipe(BaseModel):
 
 class RecipeCreate(BaseModel):
     url: str
+
+class RecipeManualCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    prep_time: Optional[str] = None
+    cook_time: Optional[str] = None
+    servings: Optional[str] = None
+    ingredients: List[Ingredient] = []
+    steps: List[RecipeStep] = []
+    tags: List[str] = []
 
 class RecipeUpdate(BaseModel):
     tags: Optional[List[str]] = None
