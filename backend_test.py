@@ -26,20 +26,186 @@ class RecipeAPITester:
         self.test_user_name = "Test User"
         self.custom_filter_id = None
 
-    def log_test(self, name, success, details=""):
-        """Log test result"""
-        self.tests_run += 1
-        if success:
-            self.tests_passed += 1
-            print(f"✅ {name} - PASSED")
-        else:
-            print(f"❌ {name} - FAILED: {details}")
-        
-        self.test_results.append({
-            "test": name,
-            "success": success,
-            "details": details
-        })
+    def get_headers(self):
+        """Get headers with auth token if available"""
+        headers = {'Content-Type': 'application/json'}
+        if self.auth_token:
+            headers['Authorization'] = f'Bearer {self.auth_token}'
+        return headers
+
+    def test_user_registration(self):
+        """Test user registration"""
+        try:
+            response = requests.post(
+                f"{self.api_url}/auth/register",
+                json={
+                    "email": self.test_user_email,
+                    "password": self.test_user_password,
+                    "name": self.test_user_name
+                },
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                self.auth_token = data.get('token')
+                self.user_id = data.get('user', {}).get('id')
+                details += f", User ID: {self.user_id}, Token received: {bool(self.auth_token)}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("User Registration", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("User Registration", False, str(e))
+            return False
+
+    def test_user_login(self):
+        """Test user login"""
+        try:
+            response = requests.post(
+                f"{self.api_url}/auth/login",
+                json={
+                    "email": self.test_user_email,
+                    "password": self.test_user_password
+                },
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                token = data.get('token')
+                user = data.get('user', {})
+                details += f", User: {user.get('name')}, Email: {user.get('email')}"
+                # Verify token matches registration token
+                if token == self.auth_token:
+                    details += ", Token matches registration"
+                else:
+                    details += ", New token received"
+                    self.auth_token = token
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("User Login", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("User Login", False, str(e))
+            return False
+
+    def test_get_current_user(self):
+        """Test getting current user info"""
+        try:
+            response = requests.get(
+                f"{self.api_url}/auth/me",
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", User: {data.get('name')}, Email: {data.get('email')}"
+                details += f", Custom filters: {len(data.get('custom_filters', []))}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("Get Current User", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Get Current User", False, str(e))
+            return False
+
+    def test_get_filters(self):
+        """Test getting all filters (default + custom)"""
+        try:
+            response = requests.get(
+                f"{self.api_url}/filters",
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                default_filters = data.get('default_filters', [])
+                custom_filters = data.get('custom_filters', [])
+                details += f", Default filters: {len(default_filters)}, Custom filters: {len(custom_filters)}"
+                
+                # Verify default filters exist
+                expected_defaults = ['apero', 'entrees', 'plats', 'desserts', 'sale', 'sucre', 'viande', 'poisson']
+                found_defaults = [f['id'] for f in default_filters]
+                missing = [f for f in expected_defaults if f not in found_defaults]
+                if missing:
+                    details += f", Missing default filters: {missing}"
+                else:
+                    details += ", All default filters present"
+            
+            self.log_test("Get Filters", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Get Filters", False, str(e))
+            return False
+
+    def test_create_custom_filter(self):
+        """Test creating a custom filter"""
+        try:
+            response = requests.post(
+                f"{self.api_url}/filters",
+                json={
+                    "name": "Test Filter",
+                    "color": "#FF5733"
+                },
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                self.custom_filter_id = data.get('id')
+                details += f", Filter ID: {self.custom_filter_id}, Name: {data.get('name')}"
+                details += f", Color: {data.get('color')}, Row: {data.get('row')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("Create Custom Filter", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Create Custom Filter", False, str(e))
+            return False
 
     def test_root_endpoint(self):
         """Test API root endpoint"""
