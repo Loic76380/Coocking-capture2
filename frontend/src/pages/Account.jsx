@@ -131,6 +131,18 @@ const Account = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Suggestions */}
+            <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-stone-100" data-testid="filter-suggestions">
+              <h4 className="text-sm font-medium text-foreground mb-2">💡 Idées de catégories à créer :</h4>
+              <ul className="text-sm text-stone-600 space-y-1.5">
+                <li>• <strong>Inspiration :</strong> Comfort food, Recettes de grand-mère, Cuisine du monde...</li>
+                <li>• <strong>Origine :</strong> Français, Italien, Asiatique, Mexicain, Libanais...</li>
+                <li>• <strong>Mode de cuisson :</strong> Four, Poêle, Air fryer, Vapeur, Plancha, Barbecue...</li>
+                <li>• <strong>Régime :</strong> Végétarien, Vegan, Sans gluten, Light...</li>
+                <li>• <strong>Occasion :</strong> Fêtes, Brunch, Pique-nique, Semaine express...</li>
+              </ul>
+            </div>
+
             {/* Add New Filter Form */}
             <form onSubmit={handleAddFilter} className="mb-6" data-testid="add-filter-form">
               <div className="flex gap-3 items-end">
