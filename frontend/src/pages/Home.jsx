@@ -33,7 +33,7 @@ const Home = () => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post(`${API}/recipes/extract`, { url });
+      const response = await axios.post(`${API}/recipes/extract`, { url }, { timeout: 60000 });
       toast.success("Recette extraite avec succès !");
       navigate(`/recipe/${response.data.id}`);
     } catch (error) {
@@ -93,7 +93,7 @@ const Home = () => {
                   {isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      Extraction...
+                      Analyse en cours...
                     </>
                   ) : (
                     <>
