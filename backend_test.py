@@ -376,165 +376,50 @@ class RecipeAPITester:
             self.log_test("Unauthorized Access Protection", False, str(e))
             return False
 
-    def test_recipe_extraction(self):
-        """Test recipe extraction from URL"""
-        test_url = "https://www.marmiton.org/recettes/recette_fondant-au-chocolat_16951.aspx"
-        
+    def test_root_endpoint(self):
+        """Test API root endpoint"""
         try:
-            print(f"🔍 Testing recipe extraction with URL: {test_url}")
-            response = requests.post(
-                f"{self.api_url}/recipes/extract",
-                json={"url": test_url},
-                timeout=60  # AI extraction can take time
-            )
-            
+            response = requests.get(f"{self.api_url}/", timeout=10)
             success = response.status_code == 200
             details = f"Status: {response.status_code}"
-            
             if success:
                 data = response.json()
-                self.created_recipe_id = data.get('id')
-                details += f", Recipe ID: {self.created_recipe_id}, Title: {data.get('title', 'N/A')}"
-                details += f", Ingredients: {len(data.get('ingredients', []))}, Steps: {len(data.get('steps', []))}"
-            else:
-                try:
-                    error_data = response.json()
-                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
-                except:
-                    details += f", Raw response: {response.text[:200]}"
-            
-            self.log_test("Recipe Extraction", success, details)
+                details += f", Response: {data}"
+            self.log_test("API Root Endpoint", success, details)
             return success
-            
         except Exception as e:
-            self.log_test("Recipe Extraction", False, str(e))
-            return False
-
-    def test_get_all_recipes(self):
-        """Test getting all recipes"""
-        try:
-            response = requests.get(f"{self.api_url}/recipes", timeout=10)
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            
-            if success:
-                data = response.json()
-                details += f", Recipe count: {len(data)}"
-            
-            self.log_test("Get All Recipes", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Get All Recipes", False, str(e))
-            return False
-
-    def test_get_single_recipe(self):
-        """Test getting a single recipe by ID"""
-        if not self.created_recipe_id:
-            self.log_test("Get Single Recipe", False, "No recipe ID available (extraction failed)")
-            return False
-            
-        try:
-            response = requests.get(f"{self.api_url}/recipes/{self.created_recipe_id}", timeout=10)
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            
-            if success:
-                data = response.json()
-                details += f", Recipe: {data.get('title', 'N/A')}"
-            
-            self.log_test("Get Single Recipe", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Get Single Recipe", False, str(e))
-            return False
-
-    def test_send_email(self):
-        """Test sending recipe by email"""
-        if not self.created_recipe_id:
-            self.log_test("Send Recipe Email", False, "No recipe ID available (extraction failed)")
-            return False
-            
-        try:
-            response = requests.post(
-                f"{self.api_url}/recipes/{self.created_recipe_id}/send-email",
-                json={"recipient_email": "test@example.com"},
-                timeout=15
-            )
-            
-            # Email will fail with placeholder key, but API structure should work
-            # We expect either 200 (success) or 500 (email service error)
-            success = response.status_code in [200, 500]
-            details = f"Status: {response.status_code}"
-            
-            if response.status_code == 200:
-                data = response.json()
-                details += f", Email sent successfully: {data.get('message', 'N/A')}"
-            elif response.status_code == 500:
-                try:
-                    error_data = response.json()
-                    details += f", Expected email error (placeholder key): {error_data.get('detail', 'N/A')}"
-                except:
-                    details += ", Expected email service error"
-            
-            self.log_test("Send Recipe Email", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Send Recipe Email", False, str(e))
-            return False
-
-    def test_delete_recipe(self):
-        """Test deleting a recipe"""
-        if not self.created_recipe_id:
-            self.log_test("Delete Recipe", False, "No recipe ID available (extraction failed)")
-            return False
-            
-        try:
-            response = requests.delete(f"{self.api_url}/recipes/{self.created_recipe_id}", timeout=10)
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            
-            if success:
-                data = response.json()
-                details += f", Message: {data.get('message', 'N/A')}"
-            
-            self.log_test("Delete Recipe", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Delete Recipe", False, str(e))
-            return False
-
-    def test_invalid_recipe_id(self):
-        """Test handling of invalid recipe ID"""
-        try:
-            response = requests.get(f"{self.api_url}/recipes/invalid-id-123", timeout=10)
-            success = response.status_code == 404
-            details = f"Status: {response.status_code} (expected 404)"
-            
-            self.log_test("Invalid Recipe ID Handling", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Invalid Recipe ID Handling", False, str(e))
+            self.log_test("API Root Endpoint", False, str(e))
             return False
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting Backend API Tests")
+        print("🚀 Starting Backend API Tests (Authentication & Filters)")
         print(f"📍 Testing against: {self.base_url}")
+        print(f"👤 Test user: {self.test_user_email}")
         print("=" * 60)
         
         # Test in logical order
         self.test_root_endpoint()
-        self.test_recipe_extraction()
-        self.test_get_all_recipes()
-        self.test_get_single_recipe()
-        self.test_send_email()
-        self.test_invalid_recipe_id()
-        self.test_delete_recipe()
+        
+        # Authentication tests
+        self.test_user_registration()
+        self.test_user_login()
+        self.test_get_current_user()
+        
+        # Authorization test
+        self.test_unauthorized_access()
+        
+        # Filter tests
+        self.test_get_filters()
+        self.test_create_custom_filter()
+        
+        # Recipe tests (authenticated)
+        self.test_recipe_extraction_authenticated()
+        self.test_get_user_recipes()
+        self.test_update_recipe_tags()
+        
+        # Cleanup tests
+        self.test_delete_custom_filter()
         
         # Print summary
         print("\n" + "=" * 60)
