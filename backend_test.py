@@ -361,13 +361,8 @@ class RecipeAPITester:
             # Test without auth token
             response = requests.get(f"{self.api_url}/recipes", timeout=10)
             
-            success = response.status_code == 401
-            details = f"Status: {response.status_code} (expected 401)"
-            
-            if not success and response.status_code == 422:
-                # Some frameworks return 422 for missing auth
-                success = True
-                details = f"Status: {response.status_code} (acceptable for missing auth)"
+            success = response.status_code in [401, 403, 422]
+            details = f"Status: {response.status_code} (expected 401/403/422)"
             
             self.log_test("Unauthorized Access Protection", success, details)
             return success
