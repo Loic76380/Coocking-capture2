@@ -504,6 +504,8 @@ class RecipeAPITester:
         # Recipe tests (authenticated)
         self.test_recipe_extraction_authenticated()
         self.test_get_user_recipes()
+        self.test_update_recipe_ingredients()
+        self.test_update_recipe_steps()
         self.test_update_recipe_tags()
         
         # Cleanup tests
