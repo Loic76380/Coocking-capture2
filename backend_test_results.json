@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-01-03T01:48:04.645379",
-  "total_tests": 7,
-  "passed_tests": 6,
-  "success_rate": 85.71428571428571,
+  "timestamp": "2026-01-03T19:11:06.668565",
+  "total_tests": 11,
+  "passed_tests": 10,
+  "success_rate": 90.9090909090909,
   "test_details": [
     {
       "test": "API Root Endpoint",
@@ -10,34 +10,54 @@
       "details": "Status: 200, Response: {'message': 'Cooking Capture API'}"
     },
     {
-      "test": "Recipe Extraction",
+      "test": "User Registration",
       "success": true,
-      "details": "Status: 200, Recipe ID: 5c884a44-2aca-4a33-846e-5a55eafaaa1b, Title: Brownies, Ingredients: 7, Steps: 5"
+      "details": "Status: 200, User ID: 931010d7-d6e9-4aeb-b0d7-cfdfce18c1eb, Token received: True"
     },
     {
-      "test": "Get All Recipes",
+      "test": "User Login",
       "success": true,
-      "details": "Status: 200, Recipe count: 1"
+      "details": "Status: 200, User: Test User, Email: test_e5e9272d@test.com, Token matches registration"
     },
     {
-      "test": "Get Single Recipe",
+      "test": "Get Current User",
       "success": true,
-      "details": "Status: 200, Recipe: Brownies"
+      "details": "Status: 200, User: Test User, Email: test_e5e9272d@test.com, Custom filters: 0"
     },
     {
-      "test": "Send Recipe Email",
+      "test": "Unauthorized Access Protection",
       "success": false,
-      "details": "Status: 520"
+      "details": "Status: 403 (expected 401)"
     },
     {
-      "test": "Invalid Recipe ID Handling",
+      "test": "Get Filters",
       "success": true,
-      "details": "Status: 404 (expected 404)"
+      "details": "Status: 200, Default filters: 8, Custom filters: 0, All default filters present"
     },
     {
-      "test": "Delete Recipe",
+      "test": "Create Custom Filter",
       "success": true,
-      "details": "Status: 200, Message: Recette supprim\u00e9e"
+      "details": "Status: 200, Filter ID: a29e5c4b-fc3c-415f-adfe-9fb872b517dd, Name: Test Filter, Color: #FF5733, Row: 3"
+    },
+    {
+      "test": "Authenticated Recipe Extraction",
+      "success": true,
+      "details": "Status: 200, Recipe ID: 11bd31ae-0fb4-420c-a767-09e35bce5f3b, Title: Brownies, User ID: 931010d7-d6e9-4aeb-b0d7-cfdfce18c1eb, Ingredients: 7, Steps: 5"
+    },
+    {
+      "test": "Get User Recipes (Privacy)",
+      "success": true,
+      "details": "Status: 200, Recipe count: 1, All recipes belong to current user"
+    },
+    {
+      "test": "Update Recipe Tags",
+      "success": true,
+      "details": "Status: 200, Updated tags: ['apero', 'sale', 'a29e5c4b-fc3c-415f-adfe-9fb872b517dd'], Count: 3, Tags correctly updated"
+    },
+    {
+      "test": "Delete Custom Filter",
+      "success": true,
+      "details": "Status: 200, Message: Filtre supprim\u00e9"
     }
   ]
 }
