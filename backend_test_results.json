@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-01-03T01:48:04.645379",
+  "total_tests": 7,
+  "passed_tests": 6,
+  "success_rate": 85.71428571428571,
+  "test_details": [
+    {
+      "test": "API Root Endpoint",
+      "success": true,
+      "details": "Status: 200, Response: {'message': 'Cooking Capture API'}"
+    },
+    {
+      "test": "Recipe Extraction",
+      "success": true,
+      "details": "Status: 200, Recipe ID: 5c884a44-2aca-4a33-846e-5a55eafaaa1b, Title: Brownies, Ingredients: 7, Steps: 5"
+    },
+    {
+      "test": "Get All Recipes",
+      "success": true,
+      "details": "Status: 200, Recipe count: 1"
+    },
+    {
+      "test": "Get Single Recipe",
+      "success": true,
+      "details": "Status: 200, Recipe: Brownies"
+    },
+    {
+      "test": "Send Recipe Email",
+      "success": false,
+      "details": "Status: 520"
+    },
+    {
+      "test": "Invalid Recipe ID Handling",
+      "success": true,
+      "details": "Status: 404 (expected 404)"
+    },
+    {
+      "test": "Delete Recipe",
+      "success": true,
+      "details": "Status: 200, Message: Recette supprim\u00e9e"
+    }
+  ]
+}
