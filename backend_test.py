@@ -296,7 +296,93 @@ class RecipeAPITester:
             self.log_test("Get User Recipes (Privacy)", False, str(e))
             return False
 
-    def test_update_recipe_tags(self):
+    def test_update_recipe_ingredients(self):
+        """Test updating recipe ingredients"""
+        if not self.created_recipe_id:
+            self.log_test("Update Recipe Ingredients", False, "No recipe ID available")
+            return False
+            
+        try:
+            # Test updating ingredients with new data
+            new_ingredients = [
+                {"name": "Chocolat noir", "quantity": "200", "unit": "g"},
+                {"name": "Beurre", "quantity": "100", "unit": "g"},
+                {"name": "Oeufs", "quantity": "3", "unit": ""}
+            ]
+                
+            response = requests.put(
+                f"{self.api_url}/recipes/{self.created_recipe_id}",
+                json={"ingredients": new_ingredients},
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                updated_ingredients = data.get('ingredients', [])
+                details += f", Updated ingredients count: {len(updated_ingredients)}"
+                # Verify ingredients were actually updated
+                if len(updated_ingredients) == len(new_ingredients):
+                    details += ", Ingredient count matches"
+                    # Check first ingredient details
+                    if updated_ingredients and updated_ingredients[0].get('name') == 'Chocolat noir':
+                        details += ", First ingredient correctly updated"
+                else:
+                    details += f", Ingredient count mismatch - expected: {len(new_ingredients)}, got: {len(updated_ingredients)}"
+            
+            self.log_test("Update Recipe Ingredients", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Update Recipe Ingredients", False, str(e))
+            return False
+
+    def test_update_recipe_steps(self):
+        """Test updating recipe steps"""
+        if not self.created_recipe_id:
+            self.log_test("Update Recipe Steps", False, "No recipe ID available")
+            return False
+            
+        try:
+            # Test updating steps with new data
+            new_steps = [
+                {"step_number": 1, "instruction": "Faire fondre le chocolat au bain-marie"},
+                {"step_number": 2, "instruction": "Mélanger avec le beurre"},
+                {"step_number": 3, "instruction": "Ajouter les oeufs un par un"}
+            ]
+                
+            response = requests.put(
+                f"{self.api_url}/recipes/{self.created_recipe_id}",
+                json={"steps": new_steps},
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                updated_steps = data.get('steps', [])
+                details += f", Updated steps count: {len(updated_steps)}"
+                # Verify steps were actually updated
+                if len(updated_steps) == len(new_steps):
+                    details += ", Step count matches"
+                    # Check first step details
+                    if updated_steps and updated_steps[0].get('instruction').startswith('Faire fondre'):
+                        details += ", First step correctly updated"
+                else:
+                    details += f", Step count mismatch - expected: {len(new_steps)}, got: {len(updated_steps)}"
+            
+            self.log_test("Update Recipe Steps", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Update Recipe Steps", False, str(e))
+            return False
         """Test updating recipe tags"""
         if not self.created_recipe_id:
             self.log_test("Update Recipe Tags", False, "No recipe ID available")
