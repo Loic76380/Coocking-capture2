@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-01-03T20:05:42.639683",
-  "total_tests": 13,
-  "passed_tests": 13,
+  "timestamp": "2026-01-03T21:01:02.524564",
+  "total_tests": 15,
+  "passed_tests": 15,
   "success_rate": 100.0,
   "test_details": [
     {
@@ -12,17 +12,17 @@
     {
       "test": "User Registration",
       "success": true,
-      "details": "Status: 200, User ID: ef7b26c7-b65a-45f0-b707-bf47ec7a96b9, Token received: True"
+      "details": "Status: 200, User ID: 8ea29603-6d05-4eb9-bbd1-adb1fc643a2c, Token received: True"
     },
     {
       "test": "User Login",
       "success": true,
-      "details": "Status: 200, User: Test User, Email: test_6d131fc0@test.com, New token received"
+      "details": "Status: 200, User: Test User, Email: test_297e6fd6@test.com, Token matches registration"
     },
     {
       "test": "Get Current User",
       "success": true,
-      "details": "Status: 200, User: Test User, Email: test_6d131fc0@test.com, Custom filters: 0"
+      "details": "Status: 200, User: Test User, Email: test_297e6fd6@test.com, Custom filters: 0"
     },
     {
       "test": "Unauthorized Access Protection",
@@ -37,17 +37,27 @@
     {
       "test": "Create Custom Filter",
       "success": true,
-      "details": "Status: 200, Filter ID: d93c9e5f-4937-4045-a1f0-db426fd3a11b, Name: Test Filter, Color: #FF5733, Row: 3"
+      "details": "Status: 200, Filter ID: a135a185-d4f1-4045-b114-9b658e7698f4, Name: Test Filter, Color: #FF5733, Row: 3"
     },
     {
       "test": "Authenticated Recipe Extraction",
       "success": true,
-      "details": "Status: 200, Recipe ID: 4c118f81-f973-472f-9c8a-334f32cfccd3, Title: Brownies, User ID: ef7b26c7-b65a-45f0-b707-bf47ec7a96b9, Ingredients: 7, Steps: 5"
+      "details": "Status: 200, Recipe ID: 7903bcf9-3dea-4eeb-a905-5a01aa95bdbc, Title: Brownies, User ID: 8ea29603-6d05-4eb9-bbd1-adb1fc643a2c, Ingredients: 7, Steps: 5"
+    },
+    {
+      "test": "Create Manual Recipe",
+      "success": true,
+      "details": "Status: 200, Recipe ID: 38627383-c1b4-4753-bc05-1683897ca645, Title: Test Manual Recipe, Source type: manual, User ID: 8ea29603-6d05-4eb9-bbd1-adb1fc643a2c, Ingredients: 3, Steps: 3, Source type correct, Source URL correctly null"
+    },
+    {
+      "test": "Upload Document Recipe",
+      "success": true,
+      "details": "Status: 200, Recipe ID: d8987556-417a-40d2-b3f2-04854955ddb4, Title: Tarte aux Pommes, Source type: document, Source URL: document:test_recipe.txt, Ingredients: 5, Steps: 5, Source type correct, Source URL contains filename"
     },
     {
       "test": "Get User Recipes (Privacy)",
       "success": true,
-      "details": "Status: 200, Recipe count: 1, All recipes belong to current user"
+      "details": "Status: 200, Recipe count: 3, All recipes belong to current user"
     },
     {
       "test": "Update Recipe Ingredients",
@@ -62,7 +72,7 @@
     {
       "test": "Update Recipe Tags",
       "success": true,
-      "details": "Status: 200, Updated tags: ['apero', 'sale', 'd93c9e5f-4937-4045-a1f0-db426fd3a11b'], Count: 3, Tags correctly updated"
+      "details": "Status: 200, Updated tags: ['apero', 'sale', 'a135a185-d4f1-4045-b114-9b658e7698f4'], Count: 3, Tags correctly updated"
     },
     {
       "test": "Delete Custom Filter",
