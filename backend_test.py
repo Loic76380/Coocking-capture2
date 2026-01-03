@@ -423,6 +423,147 @@ class RecipeAPITester:
             self.log_test("Update Recipe Tags", False, str(e))
             return False
 
+    def test_create_manual_recipe(self):
+        """Test creating a manual recipe"""
+        try:
+            manual_recipe_data = {
+                "title": "Test Manual Recipe",
+                "description": "A test recipe created manually",
+                "prep_time": "15 minutes",
+                "cook_time": "30 minutes",
+                "servings": "4 personnes",
+                "ingredients": [
+                    {"name": "Farine", "quantity": "200", "unit": "g"},
+                    {"name": "Oeufs", "quantity": "2", "unit": ""},
+                    {"name": "Lait", "quantity": "250", "unit": "ml"}
+                ],
+                "steps": [
+                    {"step_number": 1, "instruction": "Mélanger la farine et les oeufs"},
+                    {"step_number": 2, "instruction": "Ajouter le lait progressivement"},
+                    {"step_number": 3, "instruction": "Cuire à feu moyen"}
+                ],
+                "tags": ["plats"]
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/recipes/manual",
+                json=manual_recipe_data,
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Recipe ID: {data.get('id')}, Title: {data.get('title')}"
+                details += f", Source type: {data.get('source_type')}, User ID: {data.get('user_id')}"
+                details += f", Ingredients: {len(data.get('ingredients', []))}, Steps: {len(data.get('steps', []))}"
+                
+                # Verify source_type is 'manual'
+                if data.get('source_type') == 'manual':
+                    details += ", Source type correct"
+                else:
+                    details += f", Source type incorrect: {data.get('source_type')}"
+                    
+                # Verify source_url is None
+                if data.get('source_url') is None:
+                    details += ", Source URL correctly null"
+                else:
+                    details += f", Source URL should be null: {data.get('source_url')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("Create Manual Recipe", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Create Manual Recipe", False, str(e))
+            return False
+
+    def test_upload_document_recipe(self):
+        """Test uploading a document and extracting recipe"""
+        try:
+            # Create a simple text file with recipe content
+            recipe_text = """Tarte aux Pommes
+
+Description: Une délicieuse tarte aux pommes traditionnelle
+
+Temps de préparation: 20 minutes
+Temps de cuisson: 40 minutes
+Portions: 6 personnes
+
+Ingrédients:
+- 200g farine
+- 100g beurre
+- 1 oeuf
+- 3 pommes
+- 50g sucre
+
+Étapes:
+1. Préparer la pâte avec farine, beurre et oeuf
+2. Éplucher et couper les pommes
+3. Étaler la pâte dans un moule
+4. Disposer les pommes et saupoudrer de sucre
+5. Cuire au four à 180°C pendant 40 minutes"""
+
+            # Create a file-like object
+            files = {
+                'file': ('test_recipe.txt', recipe_text.encode('utf-8'), 'text/plain')
+            }
+            
+            # Remove Content-Type from headers for multipart upload
+            headers = {}
+            if self.auth_token:
+                headers['Authorization'] = f'Bearer {self.auth_token}'
+            
+            response = requests.post(
+                f"{self.api_url}/recipes/upload",
+                files=files,
+                headers=headers,
+                timeout=90  # AI processing can take time
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Recipe ID: {data.get('id')}, Title: {data.get('title')}"
+                details += f", Source type: {data.get('source_type')}, Source URL: {data.get('source_url')}"
+                details += f", Ingredients: {len(data.get('ingredients', []))}, Steps: {len(data.get('steps', []))}"
+                
+                # Verify source_type is 'document'
+                if data.get('source_type') == 'document':
+                    details += ", Source type correct"
+                else:
+                    details += f", Source type incorrect: {data.get('source_type')}"
+                    
+                # Verify source_url contains filename
+                source_url = data.get('source_url', '')
+                if 'test_recipe.txt' in source_url:
+                    details += ", Source URL contains filename"
+                else:
+                    details += f", Source URL missing filename: {source_url}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("Upload Document Recipe", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Upload Document Recipe", False, str(e))
+            return False
+
     def test_delete_custom_filter(self):
         """Test deleting a custom filter"""
         if not self.custom_filter_id:
