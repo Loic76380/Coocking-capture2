@@ -5,7 +5,19 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Clock, Users, Trash2, ExternalLink, BookOpen, ChefHat, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Clock, Users, Trash2, ExternalLink, BookOpen, ChefHat, X, Plus, FileText, Globe, PenLine } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +38,19 @@ const Directory = () => {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  
+  // New recipe form
+  const [newRecipe, setNewRecipe] = useState({
+    title: "",
+    description: "",
+    prep_time: "",
+    cook_time: "",
+    servings: "",
+    ingredientsText: "",
+    stepsText: ""
+  });
   
   const allFilters = getAllFilters();
 
@@ -56,6 +81,70 @@ const Directory = () => {
     }
   };
 
+  const parseIngredients = (text) => {
+    if (!text.trim()) return [];
+    return text.split('\n').filter(line => line.trim()).map(line => {
+      // Try to parse "quantity unit ingredient" format
+      const match = line.match(/^(\d+[\d.,\/]*)\s*(\w+)?\s+(.+)$/);
+      if (match) {
+        return { quantity: match[1], unit: match[2] || "", name: match[3] };
+      }
+      return { quantity: "", unit: "", name: line.trim() };
+    });
+  };
+
+  const parseSteps = (text) => {
+    if (!text.trim()) return [];
+    return text.split('\n').filter(line => line.trim()).map((line, index) => {
+      // Remove leading numbers/dots if present
+      const instruction = line.replace(/^\d+[\.\)]\s*/, '').trim();
+      return { step_number: index + 1, instruction };
+    });
+  };
+
+  const handleCreateRecipe = async (e) => {
+    e.preventDefault();
+    
+    if (!newRecipe.title.trim()) {
+      toast.error("Le titre est requis");
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const recipeData = {
+        title: newRecipe.title.trim(),
+        description: newRecipe.description.trim() || null,
+        prep_time: newRecipe.prep_time.trim() || null,
+        cook_time: newRecipe.cook_time.trim() || null,
+        servings: newRecipe.servings.trim() || null,
+        ingredients: parseIngredients(newRecipe.ingredientsText),
+        steps: parseSteps(newRecipe.stepsText),
+        tags: []
+      };
+
+      const response = await axios.post(`${API}/recipes/manual`, recipeData);
+      setRecipes([response.data, ...recipes]);
+      toast.success("Recette créée !");
+      setIsCreateDialogOpen(false);
+      setNewRecipe({
+        title: "",
+        description: "",
+        prep_time: "",
+        cook_time: "",
+        servings: "",
+        ingredientsText: "",
+        stepsText: ""
+      });
+    } catch (error) {
+      console.error("Error creating recipe:", error);
+      toast.error("Erreur lors de la création");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const toggleFilter = (filterId) => {
     setActiveFilters(prev => 
       prev.includes(filterId)
@@ -77,20 +166,20 @@ const Directory = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short'
-    });
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
-  const getFilterById = (filterId) => {
-    return allFilters.find(f => f.id === filterId);
+  const getFilterById = (filterId) => allFilters.find(f => f.id === filterId);
+
+  const getSourceIcon = (recipe) => {
+    if (recipe.source_type === "manual") return <PenLine className="w-3 h-3" />;
+    if (recipe.source_type === "document") return <FileText className="w-3 h-3" />;
+    return <Globe className="w-3 h-3" />;
   };
 
-  // Group filters by row
   const row1Filters = allFilters.filter(f => f.row === 1);
   const row2Filters = allFilters.filter(f => f.row === 2);
-  const row3Filters = allFilters.filter(f => f.row === 3); // Custom filters
+  const row3Filters = allFilters.filter(f => f.row === 3);
 
   if (isLoading) {
     return (
@@ -107,8 +196,8 @@ const Directory = () => {
     <div className="min-h-[calc(100vh-64px)] py-8" data-testid="directory-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-primary" />
             </div>
@@ -122,17 +211,144 @@ const Directory = () => {
               </p>
             </div>
           </div>
+          
+          {/* Create Recipe Button */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-full" data-testid="create-recipe-btn">
+                <Plus className="w-4 h-4 mr-2" />
+                Créer une recette
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-2xl">Nouvelle Recette</DialogTitle>
+                <DialogDescription>
+                  Créez votre propre recette manuellement
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleCreateRecipe} className="space-y-4 mt-4" data-testid="create-recipe-form">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="title">Titre *</Label>
+                    <Input
+                      id="title"
+                      placeholder="Ex: Tarte aux pommes de mamie"
+                      value={newRecipe.title}
+                      onChange={(e) => setNewRecipe({...newRecipe, title: e.target.value})}
+                      data-testid="recipe-title-input"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      placeholder="Courte description de la recette"
+                      value={newRecipe.description}
+                      onChange={(e) => setNewRecipe({...newRecipe, description: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="prep_time">Temps de préparation</Label>
+                    <Input
+                      id="prep_time"
+                      placeholder="Ex: 30 minutes"
+                      value={newRecipe.prep_time}
+                      onChange={(e) => setNewRecipe({...newRecipe, prep_time: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="cook_time">Temps de cuisson</Label>
+                    <Input
+                      id="cook_time"
+                      placeholder="Ex: 45 minutes"
+                      value={newRecipe.cook_time}
+                      onChange={(e) => setNewRecipe({...newRecipe, cook_time: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="servings">Portions</Label>
+                    <Input
+                      id="servings"
+                      placeholder="Ex: 4 personnes"
+                      value={newRecipe.servings}
+                      onChange={(e) => setNewRecipe({...newRecipe, servings: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="ingredients">Ingrédients (un par ligne)</Label>
+                  <Textarea
+                    id="ingredients"
+                    placeholder={"200 g farine\n3 oeufs\n100 g sucre\n1 pincée sel"}
+                    value={newRecipe.ingredientsText}
+                    onChange={(e) => setNewRecipe({...newRecipe, ingredientsText: e.target.value})}
+                    className="min-h-[120px] font-mono text-sm"
+                    data-testid="ingredients-textarea"
+                  />
+                  <p className="text-xs text-stone-500">Format: quantité unité ingrédient (ex: 200 g farine)</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="steps">Étapes de préparation (une par ligne)</Label>
+                  <Textarea
+                    id="steps"
+                    placeholder={"Préchauffer le four à 180°C\nMélanger les ingrédients secs\nAjouter les oeufs un par un\nEnfourner pendant 45 minutes"}
+                    value={newRecipe.stepsText}
+                    onChange={(e) => setNewRecipe({...newRecipe, stepsText: e.target.value})}
+                    className="min-h-[150px] text-sm"
+                    data-testid="steps-textarea"
+                  />
+                </div>
+                
+                <DialogFooter className="gap-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsCreateDialogOpen(false)}
+                    className="rounded-full"
+                  >
+                    Annuler
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isCreating}
+                    className="rounded-full"
+                    data-testid="submit-recipe-btn"
+                  >
+                    {isCreating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Création...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Créer la recette
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Filter Section */}
-        <div className="mb-6 space-y-3" data-testid="filters-section">
-          {/* Row 1: Apéro, Entrées, Plats, Desserts */}
+        <div className="mb-6 space-y-2" data-testid="filters-section">
           <div className="flex flex-wrap gap-2">
             {row1Filters.map((filter) => (
               <button
                 key={filter.id}
                 onClick={() => toggleFilter(filter.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                   activeFilters.includes(filter.id)
                     ? 'text-white shadow-md scale-105'
                     : 'bg-white text-stone-700 border border-stone-200 hover:border-stone-300'
@@ -145,13 +361,12 @@ const Directory = () => {
             ))}
           </div>
 
-          {/* Row 2: Salé, Sucré, Viande, Poisson + Reset */}
           <div className="flex flex-wrap gap-2 items-center">
             {row2Filters.map((filter) => (
               <button
                 key={filter.id}
                 onClick={() => toggleFilter(filter.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                   activeFilters.includes(filter.id)
                     ? 'text-white shadow-md scale-105'
                     : 'bg-white text-stone-700 border border-stone-200 hover:border-stone-300'
@@ -166,7 +381,7 @@ const Directory = () => {
             {activeFilters.length > 0 && (
               <button
                 onClick={resetFilters}
-                className="px-4 py-2 rounded-full text-sm font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all flex items-center gap-1"
+                className="px-3 py-1.5 rounded-full text-sm font-medium bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all flex items-center gap-1"
                 data-testid="reset-filters"
               >
                 <X className="w-3 h-3" />
@@ -175,14 +390,13 @@ const Directory = () => {
             )}
           </div>
 
-          {/* Row 3: Custom filters */}
           {row3Filters.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {row3Filters.map((filter) => (
                 <button
                   key={filter.id}
                   onClick={() => toggleFilter(filter.id)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     activeFilters.includes(filter.id)
                       ? 'text-white shadow-md scale-105'
                       : 'bg-white text-stone-700 border border-stone-200 hover:border-stone-300'
@@ -207,25 +421,29 @@ const Directory = () => {
               Aucune recette
             </h2>
             <p className="text-stone-600 mb-6">
-              Commencez par capturer votre première recette
+              Commencez par ajouter votre première recette
             </p>
-            <Button asChild className="rounded-full">
-              <Link to="/" data-testid="add-first-recipe-btn">
-                Ajouter une recette
-              </Link>
-            </Button>
+            <div className="flex items-center justify-center gap-3">
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/">Importer une recette</Link>
+              </Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)} className="rounded-full">
+                <Plus className="w-4 h-4 mr-2" />
+                Créer une recette
+              </Button>
+            </div>
           </div>
         ) : filteredRecipes.length === 0 ? (
           <div className="text-center py-16" data-testid="no-results">
             <p className="text-stone-600 mb-4">
-              Aucune recette ne correspond aux filtres sélectionnés
+              Aucune recette ne correspond aux filtres
             </p>
             <Button variant="outline" onClick={resetFilters} className="rounded-full">
               Réinitialiser les filtres
             </Button>
           </div>
         ) : (
-          /* Recipe Grid - Smaller tiles */
+          /* Recipe Grid */
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="recipe-grid">
             {filteredRecipes.map((recipe) => (
               <Card 
@@ -233,13 +451,16 @@ const Directory = () => {
                 className="recipe-card group relative bg-white border border-stone-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all"
                 data-testid={`recipe-card-${recipe.id}`}
               >
-                {/* Image placeholder - smaller */}
                 <div className="h-24 bg-gradient-to-br from-primary/10 to-secondary/30 relative">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <ChefHat className="w-8 h-8 text-primary/30" />
                   </div>
                   
-                  {/* Delete button */}
+                  {/* Source type badge */}
+                  <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 rounded-full text-xs text-stone-600 flex items-center gap-1">
+                    {getSourceIcon(recipe)}
+                  </div>
+                  
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -271,7 +492,6 @@ const Directory = () => {
                   </AlertDialog>
                 </div>
 
-                {/* Content - compact */}
                 <div className="p-3">
                   <Link 
                     to={`/recipe/${recipe.id}`}
@@ -283,7 +503,6 @@ const Directory = () => {
                     </h3>
                   </Link>
 
-                  {/* Tags */}
                   {recipe.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {recipe.tags.slice(0, 2).map((tagId) => {
@@ -305,7 +524,6 @@ const Directory = () => {
                     </div>
                   )}
 
-                  {/* Meta - minimal */}
                   <div className="flex items-center justify-between mt-2 text-xs text-stone-400">
                     {recipe.prep_time && (
                       <span className="flex items-center gap-1">
