@@ -1,34 +1,82 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
+/* App-specific styles */
+.App {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
 }
 
-.App-link {
-    color: #61dafb;
+/* Hero section gradient */
+.hero-gradient {
+    background: linear-gradient(180deg, rgba(58,90,64,0.05) 0%, rgba(249,248,246,0) 100%);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
+/* Loading shimmer */
+.loading-shimmer {
+    background: linear-gradient(90deg, #DAD7CD 0%, #A3B18A 50%, #DAD7CD 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
     }
-    to {
-        transform: rotate(360deg);
+    100% {
+        background-position: -200% 0;
     }
+}
+
+/* Glass effect */
+.glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Recipe card hover effect */
+.recipe-card {
+    transition: all 0.3s ease-out;
+}
+
+.recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -4px rgba(58, 90, 64, 0.12);
+}
+
+/* URL input focus state */
+.url-input:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 4px rgba(58, 90, 64, 0.1);
+}
+
+/* Button hover animations */
+.btn-primary {
+    transition: all 0.2s ease-out;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(58, 90, 64, 0.3);
+}
+
+/* Ingredient row hover */
+.ingredient-row {
+    transition: background-color 0.2s ease;
+}
+
+.ingredient-row:hover {
+    background-color: hsl(var(--muted));
+}
+
+/* Step number styling */
+.step-number {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+}
+
+/* Empty state illustration */
+.empty-state-bg {
+    background-image: url('https://images.unsplash.com/photo-1563942190294-a564f2170cb9?crop=entropy&cs=srgb&fm=jpg&q=85');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.1;
 }
