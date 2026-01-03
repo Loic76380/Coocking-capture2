@@ -5,6 +5,7 @@ import Home from "@/pages/Home";
 import Directory from "@/pages/Directory";
 import RecipeDetail from "@/pages/RecipeDetail";
 import Navbar from "@/components/Navbar";
+import InstallPWA from "@/components/InstallPWA";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           </Routes>
         </main>
         <Toaster position="bottom-right" richColors />
+        <InstallPWA />
       </BrowserRouter>
     </div>
   );
