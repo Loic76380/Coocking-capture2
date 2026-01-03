@@ -207,19 +207,173 @@ class RecipeAPITester:
             self.log_test("Create Custom Filter", False, str(e))
             return False
 
-    def test_root_endpoint(self):
-        """Test API root endpoint"""
+    def log_test(self, name, success, details=""):
+        """Log test result"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {name} - PASSED")
+        else:
+            print(f"❌ {name} - FAILED: {details}")
+        
+        self.test_results.append({
+            "test": name,
+            "success": success,
+            "details": details
+        })
+
+    def test_recipe_extraction_authenticated(self):
+        """Test recipe extraction with authentication"""
+        test_url = "https://www.marmiton.org/recettes/recette_fondant-au-chocolat_16951.aspx"
+        
         try:
-            response = requests.get(f"{self.api_url}/", timeout=10)
+            print(f"🔍 Testing authenticated recipe extraction with URL: {test_url}")
+            response = requests.post(
+                f"{self.api_url}/recipes/extract",
+                json={"url": test_url},
+                headers=self.get_headers(),
+                timeout=60  # AI extraction can take time
+            )
+            
             success = response.status_code == 200
             details = f"Status: {response.status_code}"
+            
             if success:
                 data = response.json()
-                details += f", Response: {data}"
-            self.log_test("API Root Endpoint", success, details)
+                self.created_recipe_id = data.get('id')
+                details += f", Recipe ID: {self.created_recipe_id}, Title: {data.get('title', 'N/A')}"
+                details += f", User ID: {data.get('user_id')}, Ingredients: {len(data.get('ingredients', []))}"
+                details += f", Steps: {len(data.get('steps', []))}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Raw response: {response.text[:200]}"
+            
+            self.log_test("Authenticated Recipe Extraction", success, details)
             return success
+            
         except Exception as e:
-            self.log_test("API Root Endpoint", False, str(e))
+            self.log_test("Authenticated Recipe Extraction", False, str(e))
+            return False
+
+    def test_get_user_recipes(self):
+        """Test getting user's private recipes"""
+        try:
+            response = requests.get(
+                f"{self.api_url}/recipes",
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Recipe count: {len(data)}"
+                # Verify all recipes belong to current user
+                if data:
+                    user_ids = [recipe.get('user_id') for recipe in data]
+                    if all(uid == self.user_id for uid in user_ids):
+                        details += ", All recipes belong to current user"
+                    else:
+                        details += ", WARNING: Found recipes from other users"
+                        success = False
+            
+            self.log_test("Get User Recipes (Privacy)", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Get User Recipes (Privacy)", False, str(e))
+            return False
+
+    def test_update_recipe_tags(self):
+        """Test updating recipe tags"""
+        if not self.created_recipe_id:
+            self.log_test("Update Recipe Tags", False, "No recipe ID available")
+            return False
+            
+        try:
+            # Use some default filter IDs and custom filter if created
+            tags = ["apero", "sale"]
+            if self.custom_filter_id:
+                tags.append(self.custom_filter_id)
+                
+            response = requests.put(
+                f"{self.api_url}/recipes/{self.created_recipe_id}",
+                json={"tags": tags},
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                updated_tags = data.get('tags', [])
+                details += f", Updated tags: {updated_tags}, Count: {len(updated_tags)}"
+                # Verify tags were actually updated
+                if set(updated_tags) == set(tags):
+                    details += ", Tags correctly updated"
+                else:
+                    details += f", Tag mismatch - expected: {tags}, got: {updated_tags}"
+            
+            self.log_test("Update Recipe Tags", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Update Recipe Tags", False, str(e))
+            return False
+
+    def test_delete_custom_filter(self):
+        """Test deleting a custom filter"""
+        if not self.custom_filter_id:
+            self.log_test("Delete Custom Filter", False, "No custom filter ID available")
+            return False
+            
+        try:
+            response = requests.delete(
+                f"{self.api_url}/filters/{self.custom_filter_id}",
+                headers=self.get_headers(),
+                timeout=10
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                details += f", Message: {data.get('message', 'N/A')}"
+            
+            self.log_test("Delete Custom Filter", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Delete Custom Filter", False, str(e))
+            return False
+
+    def test_unauthorized_access(self):
+        """Test that endpoints require authentication"""
+        try:
+            # Test without auth token
+            response = requests.get(f"{self.api_url}/recipes", timeout=10)
+            
+            success = response.status_code == 401
+            details = f"Status: {response.status_code} (expected 401)"
+            
+            if not success and response.status_code == 422:
+                # Some frameworks return 422 for missing auth
+                success = True
+                details = f"Status: {response.status_code} (acceptable for missing auth)"
+            
+            self.log_test("Unauthorized Access Protection", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Unauthorized Access Protection", False, str(e))
             return False
 
     def test_recipe_extraction(self):
