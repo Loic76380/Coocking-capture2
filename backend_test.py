@@ -156,14 +156,21 @@ class RecipeAPITester:
                 custom_filters = data.get('custom_filters', [])
                 details += f", Default filters: {len(default_filters)}, Custom filters: {len(custom_filters)}"
                 
-                # Verify default filters exist
-                expected_defaults = ['apero', 'entrees', 'plats', 'desserts', 'sale', 'sucre', 'viande', 'poisson']
+                # Verify default filters exist (including new ones)
+                expected_defaults = ['apero', 'entrees', 'plats', 'desserts', 'salade', 'petites-envies', 'sauces', 'sale', 'sucre', 'viande', 'poisson']
                 found_defaults = [f['id'] for f in default_filters]
                 missing = [f for f in expected_defaults if f not in found_defaults]
                 if missing:
                     details += f", Missing default filters: {missing}"
                 else:
                     details += ", All default filters present"
+                
+                # Verify new filters are on row 1
+                new_filters = ['salade', 'petites-envies', 'sauces']
+                row1_filters = [f for f in default_filters if f.get('row') == 1]
+                row1_ids = [f['id'] for f in row1_filters]
+                new_on_row1 = [f for f in new_filters if f in row1_ids]
+                details += f", New filters on row 1: {len(new_on_row1)}/3"
             
             self.log_test("Get Filters", success, details)
             return success
