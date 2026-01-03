@@ -662,6 +662,75 @@ async def extract_recipe(input: RecipeCreate, current_user: dict = Depends(get_c
         logger.error(f"Error extracting recipe: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'extraction: {str(e)}")
 
+@api_router.post("/recipes/manual", response_model=Recipe)
+async def create_manual_recipe(input: RecipeManualCreate, current_user: dict = Depends(get_current_user)):
+    """Create a manual recipe"""
+    recipe = Recipe(
+        user_id=current_user['id'],
+        title=input.title,
+        description=input.description,
+        source_url=None,
+        source_type="manual",
+        prep_time=input.prep_time,
+        cook_time=input.cook_time,
+        servings=input.servings,
+        ingredients=input.ingredients,
+        steps=input.steps,
+        tags=input.tags
+    )
+    
+    doc = recipe.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.recipes.insert_one(doc)
+    
+    logger.info(f"Manual recipe created: {recipe.title}")
+    return recipe
+
+@api_router.post("/recipes/upload", response_model=Recipe)
+async def upload_recipe_document(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a document (PDF, Word, image) and extract recipe"""
+    try:
+        # Read file content
+        file_content = await file.read()
+        
+        if len(file_content) > 10 * 1024 * 1024:  # 10MB limit
+            raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10MB)")
+        
+        logger.info(f"Processing uploaded file: {file.filename}, type: {file.content_type}")
+        
+        # Extract recipe from document
+        recipe_data = await extract_recipe_from_document(file_content, file.filename, file.content_type)
+        
+        recipe = Recipe(
+            user_id=current_user['id'],
+            title=recipe_data.get('title', 'Recette sans titre'),
+            description=recipe_data.get('description'),
+            source_url=f"document:{file.filename}",
+            source_type="document",
+            prep_time=recipe_data.get('prep_time'),
+            cook_time=recipe_data.get('cook_time'),
+            servings=recipe_data.get('servings'),
+            ingredients=[Ingredient(**ing) for ing in recipe_data.get('ingredients', [])],
+            steps=[RecipeStep(**step) for step in recipe_data.get('steps', [])],
+            tags=[]
+        )
+        
+        doc = recipe.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.recipes.insert_one(doc)
+        
+        logger.info(f"Document recipe saved: {recipe.title}")
+        return recipe
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing document: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'analyse du document: {str(e)}")
+
 @api_router.get("/recipes", response_model=List[Recipe])
 async def get_recipes(current_user: dict = Depends(get_current_user)):
     """Get all saved recipes for current user"""
