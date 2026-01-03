@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-01-03T19:15:59.113676",
-  "total_tests": 11,
-  "passed_tests": 11,
+  "timestamp": "2026-01-03T20:05:42.639683",
+  "total_tests": 13,
+  "passed_tests": 13,
   "success_rate": 100.0,
   "test_details": [
     {
@@ -12,17 +12,17 @@
     {
       "test": "User Registration",
       "success": true,
-      "details": "Status: 200, User ID: 38600757-5668-401a-a0fd-1c25b06a41e3, Token received: True"
+      "details": "Status: 200, User ID: ef7b26c7-b65a-45f0-b707-bf47ec7a96b9, Token received: True"
     },
     {
       "test": "User Login",
       "success": true,
-      "details": "Status: 200, User: Test User, Email: test_edf03936@test.com, Token matches registration"
+      "details": "Status: 200, User: Test User, Email: test_6d131fc0@test.com, New token received"
     },
     {
       "test": "Get Current User",
       "success": true,
-      "details": "Status: 200, User: Test User, Email: test_edf03936@test.com, Custom filters: 0"
+      "details": "Status: 200, User: Test User, Email: test_6d131fc0@test.com, Custom filters: 0"
     },
     {
       "test": "Unauthorized Access Protection",
@@ -32,17 +32,17 @@
     {
       "test": "Get Filters",
       "success": true,
-      "details": "Status: 200, Default filters: 8, Custom filters: 0, All default filters present"
+      "details": "Status: 200, Default filters: 11, Custom filters: 0, All default filters present, New filters on row 1: 3/3"
     },
     {
       "test": "Create Custom Filter",
       "success": true,
-      "details": "Status: 200, Filter ID: 0898cbee-7c79-4f8d-a323-3c73567166b0, Name: Test Filter, Color: #FF5733, Row: 3"
+      "details": "Status: 200, Filter ID: d93c9e5f-4937-4045-a1f0-db426fd3a11b, Name: Test Filter, Color: #FF5733, Row: 3"
     },
     {
       "test": "Authenticated Recipe Extraction",
       "success": true,
-      "details": "Status: 200, Recipe ID: a3889956-3d84-4804-8c16-0ef47fbbeb7f, Title: Brownies, User ID: 38600757-5668-401a-a0fd-1c25b06a41e3, Ingredients: 7, Steps: 5"
+      "details": "Status: 200, Recipe ID: 4c118f81-f973-472f-9c8a-334f32cfccd3, Title: Brownies, User ID: ef7b26c7-b65a-45f0-b707-bf47ec7a96b9, Ingredients: 7, Steps: 5"
     },
     {
       "test": "Get User Recipes (Privacy)",
@@ -50,9 +50,19 @@
       "details": "Status: 200, Recipe count: 1, All recipes belong to current user"
     },
     {
+      "test": "Update Recipe Ingredients",
+      "success": true,
+      "details": "Status: 200, Updated ingredients count: 3, Ingredient count matches, First ingredient correctly updated"
+    },
+    {
+      "test": "Update Recipe Steps",
+      "success": true,
+      "details": "Status: 200, Updated steps count: 3, Step count matches, First step correctly updated"
+    },
+    {
       "test": "Update Recipe Tags",
       "success": true,
-      "details": "Status: 200, Updated tags: ['apero', 'sale', '0898cbee-7c79-4f8d-a323-3c73567166b0'], Count: 3, Tags correctly updated"
+      "details": "Status: 200, Updated tags: ['apero', 'sale', 'd93c9e5f-4937-4045-a1f0-db426fd3a11b'], Count: 3, Tags correctly updated"
     },
     {
       "test": "Delete Custom Filter",
