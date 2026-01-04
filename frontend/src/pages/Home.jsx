@@ -20,6 +20,22 @@ const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
+  const extractUrl = (text) => {
+    // Extract URL from text that may contain characters before http/https
+    const urlMatch = text.match(/(https?:\/\/[^\s]+)/i);
+    return urlMatch ? urlMatch[1] : text;
+  };
+
+  const handleUrlChange = (e) => {
+    const value = e.target.value;
+    // Auto-extract URL if text contains http:// or https://
+    if (value.includes('http://') || value.includes('https://')) {
+      setUrl(extractUrl(value));
+    } else {
+      setUrl(value);
+    }
+  };
+
   const handleExtract = async (e) => {
     e.preventDefault();
     
@@ -29,13 +45,16 @@ const Home = () => {
       return;
     }
     
-    if (!url.trim()) {
+    // Clean URL before validation
+    const cleanUrl = extractUrl(url.trim());
+    
+    if (!cleanUrl) {
       toast.error("Veuillez entrer une URL");
       return;
     }
     
     try {
-      new URL(url);
+      new URL(cleanUrl);
     } catch {
       toast.error("URL invalide");
       return;
@@ -44,7 +63,7 @@ const Home = () => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post(`${API}/recipes/extract`, { url }, { timeout: 60000 });
+      const response = await axios.post(`${API}/recipes/extract`, { url: cleanUrl }, { timeout: 60000 });
       toast.success("Recette extraite !");
       navigate(`/recipe/${response.data.id}`);
     } catch (error) {
@@ -166,10 +185,16 @@ const Home = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                   <Input
-                    type="url"
+                    type="text"
                     placeholder="Collez l'URL de votre recette..."
                     value={url}
-                    onChange={(e) => setUrl(e.target.value)}
+                    onChange={handleUrlChange}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedText = e.clipboardData.getData('text');
+                      const extracted = extractUrl(pastedText);
+                      setUrl(extracted);
+                    }}
                     className="h-12 pl-12 pr-4 rounded-full border-2 border-stone-200 focus:border-primary focus:ring-4 focus:ring-primary/10 text-base shadow-soft"
                     data-testid="url-input"
                     disabled={isLoading || isUploading}
