@@ -41,24 +41,6 @@ const Directory = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   
-  // Update page title
-  useEffect(() => {
-    if (user?.name) {
-      document.title = `La boîte à recettes de ${user.name} | Cooking Capture`;
-    }
-    return () => {
-      document.title = 'Cooking Capture';
-    };
-  }, [user]);
-
-const Directory = () => {
-  const { getAllFilters, user } = useAuth();
-  const [recipes, setRecipes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  
   // New recipe form
   const [newRecipe, setNewRecipe] = useState({
     title: "",
@@ -69,6 +51,16 @@ const Directory = () => {
     ingredientsText: "",
     stepsText: ""
   });
+  
+  // Update page title
+  useEffect(() => {
+    if (user?.name) {
+      document.title = `La boîte à recettes de ${user.name} | Cooking Capture`;
+    }
+    return () => {
+      document.title = 'Cooking Capture';
+    };
+  }, [user]);
   
   const allFilters = getAllFilters();
 
