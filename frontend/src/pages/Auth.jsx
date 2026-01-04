@@ -14,7 +14,7 @@ const Auth = () => {
   const { login, register } = useAuth();
   
   const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [registerData, setRegisterData] = useState({ email: "", password: "", name: "" });
+  const [registerData, setRegisterData] = useState({ email: "", password: "", firstName: "" });
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
@@ -38,7 +38,7 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      await register(registerData.email, registerData.password, registerData.name);
+      await register(registerData.email, registerData.password, registerData.firstName);
       toast.success("Compte créé avec succès !");
       navigate("/");
     } catch (error) {
@@ -130,15 +130,15 @@ const Auth = () => {
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4" data-testid="register-form">
                   <div className="space-y-2">
-                    <Label htmlFor="register-name">Nom</Label>
+                    <Label htmlFor="register-firstName">Prénom</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                       <Input
-                        id="register-name"
+                        id="register-firstName"
                         type="text"
-                        placeholder="Votre nom"
-                        value={registerData.name}
-                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                        placeholder="Votre prénom"
+                        value={registerData.firstName}
+                        onChange={(e) => setRegisterData({ ...registerData, firstName: e.target.value })}
                         className="pl-10"
                         data-testid="register-name"
                         required
