@@ -34,7 +34,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const Directory = () => {
-  const { getAllFilters } = useAuth();
+  const { getAllFilters, user } = useAuth();
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState([]);
@@ -203,7 +203,7 @@ const Directory = () => {
             </div>
             <div>
               <h1 className="text-2xl font-serif font-semibold text-foreground">
-                Mes Recettes
+                La boîte à recettes de {user?.name || 'vous'}
               </h1>
               <p className="text-sm text-stone-600">
                 {filteredRecipes.length} recette{filteredRecipes.length !== 1 ? 's' : ''}
