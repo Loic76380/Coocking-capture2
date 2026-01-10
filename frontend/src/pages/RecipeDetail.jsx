@@ -346,6 +346,100 @@ const RecipeDetail = () => {
               </div>
             </div>
 
+            {/* Recipe Image Section */}
+            <Card className="p-4 mb-6 border-stone-100" data-testid="image-section">
+              <div className="flex items-center gap-2 mb-3">
+                <ImageIcon className="w-4 h-4 text-primary" />
+                <h3 className="font-medium text-foreground">Photo de la recette</h3>
+              </div>
+              
+              {recipe.image_url ? (
+                <div className="relative group">
+                  <img 
+                    src={`${BACKEND_URL}${recipe.image_url}`}
+                    alt={recipe.title}
+                    className="w-full h-48 object-cover rounded-lg"
+                    data-testid="recipe-detail-image"
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-3">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={isUploadingImage}
+                        data-testid="change-image-input"
+                      />
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="rounded-full pointer-events-none"
+                        disabled={isUploadingImage}
+                      >
+                        {isUploadingImage ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-700 rounded-full animate-spin mr-2" />
+                            Chargement...
+                          </>
+                        ) : (
+                          <>
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Modifier
+                          </>
+                        )}
+                      </Button>
+                    </label>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="rounded-full"
+                      onClick={handleDeleteImage}
+                      disabled={isDeletingImage}
+                      data-testid="delete-image-btn"
+                    >
+                      {isDeletingImage ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Suppression...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Supprimer
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <label className="cursor-pointer block">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={isUploadingImage}
+                    data-testid="upload-image-input"
+                  />
+                  <div className="border-2 border-dashed border-stone-200 rounded-lg p-8 text-center hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                    {isUploadingImage ? (
+                      <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-3" />
+                        <p className="text-sm text-stone-600">Téléchargement en cours...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                        <p className="text-sm text-stone-600 mb-1">Cliquez pour ajouter une photo</p>
+                        <p className="text-xs text-stone-400">JPG, PNG ou WebP (max 10MB)</p>
+                      </>
+                    )}
+                  </div>
+                </label>
+              )}
+            </Card>
+
             {/* Tags/Categories Section */}
             <Card className="p-4 mb-6 border-stone-100" data-testid="tags-section">
               <div className="flex items-center gap-2 mb-3">
