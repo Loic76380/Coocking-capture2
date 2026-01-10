@@ -226,6 +226,58 @@ const RecipeDetail = () => {
 
   const getFilterById = (filterId) => allFilters.find(f => f.id === filterId);
 
+  // Image upload handlers
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Format non supporté. Utilisez JPG, PNG ou WebP.");
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux (max 10MB)");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/recipes/${id}/upload-image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setRecipe({ ...recipe, image_url: response.data.image_url });
+      toast.success("Image téléchargée !");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Erreur lors du téléchargement";
+      toast.error(message);
+    } finally {
+      setIsUploadingImage(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    setIsDeletingImage(true);
+    try {
+      await axios.delete(`${API}/recipes/${id}/image`);
+      setRecipe({ ...recipe, image_url: null });
+      toast.success("Image supprimée !");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Erreur lors de la suppression";
+      toast.error(message);
+    } finally {
+      setIsDeletingImage(false);
+    }
+  };
+
   const row1Filters = allFilters.filter(f => f.row === 1);
   const row2Filters = allFilters.filter(f => f.row === 2);
   const row3Filters = allFilters.filter(f => f.row === 3);
