@@ -74,6 +74,13 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - Image deletion endpoint (DELETE /api/recipes/{id}/image)
 - Static file serving (/api/uploads/{filename})
 
+### Phase 6 - Password Recovery (10 January 2026)
+- Forgot password flow (POST /api/auth/forgot-password)
+- Password reset via email link (POST /api/auth/reset-password)
+- Reset token valid for 1 hour
+- Beautiful HTML email template for password reset
+- Reset password page (/reset-password)
+
 ## API Endpoints
 ### Authentication
 - POST /api/auth/register - Inscription
