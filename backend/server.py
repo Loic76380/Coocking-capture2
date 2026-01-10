@@ -189,6 +189,79 @@ def create_token(user_id: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+def create_reset_token(user_id: str) -> str:
+    """Create a password reset token valid for 1 hour"""
+    payload = {
+        "user_id": user_id,
+        "type": "reset",
+        "exp": datetime.now(timezone.utc) + timedelta(hours=1)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def verify_reset_token(token: str) -> str:
+    """Verify reset token and return user_id"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "reset":
+            raise HTTPException(status_code=400, detail="Token invalide")
+        return payload.get("user_id")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="Le lien a expiré. Veuillez refaire une demande.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=400, detail="Token invalide")
+
+def generate_reset_email_html(reset_link: str, user_name: str) -> str:
+    """Generate HTML email for password reset"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F9F8F6;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
+            <tr>
+                <td style="background: linear-gradient(135deg, #3A5A40 0%, #344E41 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #FFFFFF; font-size: 28px; font-weight: 400;">Cooking Capture</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 30px;">
+                    <h2 style="margin: 0 0 20px; color: #1C1917; font-size: 24px; font-weight: 600;">
+                        Réinitialisation de votre mot de passe
+                    </h2>
+                    <p style="margin: 0 0 20px; color: #57534E; font-size: 16px; line-height: 1.6;">
+                        Bonjour {user_name},
+                    </p>
+                    <p style="margin: 0 0 30px; color: #57534E; font-size: 16px; line-height: 1.6;">
+                        Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :
+                    </p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{reset_link}" style="display: inline-block; background-color: #3A5A40; color: #FFFFFF; text-decoration: none; padding: 14px 40px; border-radius: 25px; font-size: 16px; font-weight: 500;">
+                            Réinitialiser mon mot de passe
+                        </a>
+                    </div>
+                    <p style="margin: 30px 0 10px; color: #78716C; font-size: 14px; line-height: 1.6;">
+                        Ce lien est valable pendant <strong>1 heure</strong>.
+                    </p>
+                    <p style="margin: 0; color: #78716C; font-size: 14px; line-height: 1.6;">
+                        Si vous n'avez pas demandé cette réinitialisation, ignorez simplement cet email.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="background: #F5F5F4; padding: 20px 30px; text-align: center;">
+                    <p style="margin: 0; color: #78716C; font-size: 12px;">
+                        Cooking Capture - Votre assistant culinaire
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     try:
         token = credentials.credentials
