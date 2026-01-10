@@ -7,6 +7,7 @@ import Directory from "@/pages/Directory";
 import RecipeDetail from "@/pages/RecipeDetail";
 import Auth from "@/pages/Auth";
 import Account from "@/pages/Account";
+import ResetPassword from "@/pages/ResetPassword";
 import Navbar from "@/components/Navbar";
 import InstallPWA from "@/components/InstallPWA";
 
