@@ -2,12 +2,24 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChefHat, Mail, Lock, User, ArrowRight } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { ChefHat, Mail, Lock, User, ArrowRight, KeyRound } from "lucide-react";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -16,6 +28,12 @@ const Auth = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [registerData, setRegisterData] = useState({ email: "", password: "", firstName: "" });
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Forgot password states
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -47,6 +65,32 @@ const Auth = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      toast.error("Veuillez entrer votre adresse email");
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      await axios.post(`${API}/auth/forgot-password`, { email: forgotEmail });
+      setResetEmailSent(true);
+      toast.success("Email envoyé !");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Erreur lors de l'envoi";
+      toast.error(message);
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
+  const closeForgotPasswordDialog = () => {
+    setForgotPasswordOpen(false);
+    setForgotEmail("");
+    setResetEmailSent(false);
   };
 
   return (
@@ -92,7 +136,17 @@ const Auth = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Mot de passe</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">Mot de passe</Label>
+                      <button
+                        type="button"
+                        onClick={() => setForgotPasswordOpen(true)}
+                        className="text-xs text-primary hover:underline"
+                        data-testid="forgot-password-link"
+                      >
+                        Mot de passe oublié ?
+                      </button>
+                    </div>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                       <Input
@@ -179,6 +233,7 @@ const Auth = () => {
                         minLength={6}
                       />
                     </div>
+                    <p className="text-xs text-stone-500">Minimum 6 caractères</p>
                   </div>
                   
                   <Button
@@ -202,6 +257,84 @@ const Auth = () => {
           </Tabs>
         </Card>
       </div>
+
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPasswordOpen} onOpenChange={closeForgotPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+              <KeyRound className="w-6 h-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center font-serif text-xl">
+              {resetEmailSent ? "Email envoyé !" : "Mot de passe oublié"}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {resetEmailSent 
+                ? "Si un compte existe avec cette adresse, vous recevrez un email avec un lien pour réinitialiser votre mot de passe."
+                : "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          {resetEmailSent ? (
+            <div className="py-4 text-center">
+              <p className="text-sm text-stone-600 mb-4">
+                Vérifiez votre boîte de réception (et vos spams).
+              </p>
+              <Button onClick={closeForgotPasswordDialog} className="rounded-full">
+                Retour à la connexion
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="space-y-4 mt-2">
+              <div className="space-y-2">
+                <Label htmlFor="forgot-email">Adresse email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="votre@email.com"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    className="pl-10"
+                    data-testid="forgot-email-input"
+                    required
+                    disabled={isSendingReset}
+                  />
+                </div>
+              </div>
+              
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeForgotPasswordDialog}
+                  className="rounded-full"
+                  disabled={isSendingReset}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  className="rounded-full"
+                  disabled={isSendingReset}
+                  data-testid="send-reset-email-btn"
+                >
+                  {isSendingReset ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                      Envoi...
+                    </>
+                  ) : (
+                    "Envoyer le lien"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
