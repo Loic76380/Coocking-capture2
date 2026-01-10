@@ -845,8 +845,142 @@ async def send_recipe_email(recipe_id: str, email_request: EmailRequest, current
         logger.error(f"Failed to send email: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'envoi: {str(e)}")
 
+# ==================== IMAGE UPLOAD ROUTES ====================
+
+def compress_image(image_data: bytes, max_size: int = 1200, quality: int = 85) -> bytes:
+    """Compress and resize image while maintaining aspect ratio"""
+    try:
+        img = Image.open(io.BytesIO(image_data))
+        
+        # Convert to RGB if necessary (for PNG with transparency)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'P':
+                img = img.convert('RGBA')
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Resize if larger than max_size
+        if max(img.size) > max_size:
+            ratio = max_size / max(img.size)
+            new_size = tuple(int(dim * ratio) for dim in img.size)
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+        
+        # Save to bytes with compression
+        output = io.BytesIO()
+        img.save(output, format='JPEG', quality=quality, optimize=True)
+        return output.getvalue()
+    except Exception as e:
+        logger.error(f"Error compressing image: {e}")
+        raise HTTPException(status_code=400, detail="Erreur lors de la compression de l'image")
+
+@api_router.post("/recipes/{recipe_id}/upload-image")
+async def upload_recipe_image(
+    recipe_id: str,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload and compress an image for a recipe"""
+    # Check recipe exists and belongs to user
+    recipe = await db.recipes.find_one(
+        {"id": recipe_id, "user_id": current_user['id']},
+        {"_id": 0}
+    )
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Type de fichier non supporté. Utilisez JPG, PNG ou WebP.")
+    
+    try:
+        # Read and compress image
+        file_content = await file.read()
+        if len(file_content) > 10 * 1024 * 1024:  # 10MB limit
+            raise HTTPException(status_code=400, detail="Fichier trop volumineux (max 10MB)")
+        
+        compressed_image = compress_image(file_content)
+        
+        # Delete old image if exists
+        if recipe.get('image_url'):
+            old_filename = recipe['image_url'].split('/')[-1]
+            old_path = UPLOADS_DIR / old_filename
+            if old_path.exists():
+                old_path.unlink()
+        
+        # Save new image
+        filename = f"{recipe_id}_{uuid.uuid4().hex[:8]}.jpg"
+        file_path = UPLOADS_DIR / filename
+        
+        with open(file_path, 'wb') as f:
+            f.write(compressed_image)
+        
+        # Update recipe with image URL
+        image_url = f"/api/uploads/{filename}"
+        await db.recipes.update_one(
+            {"id": recipe_id},
+            {"$set": {"image_url": image_url}}
+        )
+        
+        logger.info(f"Image uploaded for recipe {recipe_id}: {filename}")
+        
+        return {
+            "status": "success",
+            "image_url": image_url,
+            "message": "Image téléchargée avec succès"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading image: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors du téléchargement: {str(e)}")
+
+@api_router.delete("/recipes/{recipe_id}/image")
+async def delete_recipe_image(
+    recipe_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete the image of a recipe"""
+    recipe = await db.recipes.find_one(
+        {"id": recipe_id, "user_id": current_user['id']},
+        {"_id": 0}
+    )
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    if not recipe.get('image_url'):
+        raise HTTPException(status_code=400, detail="Cette recette n'a pas d'image")
+    
+    try:
+        # Delete file from disk
+        filename = recipe['image_url'].split('/')[-1]
+        file_path = UPLOADS_DIR / filename
+        if file_path.exists():
+            file_path.unlink()
+        
+        # Update recipe
+        await db.recipes.update_one(
+            {"id": recipe_id},
+            {"$set": {"image_url": None}}
+        )
+        
+        logger.info(f"Image deleted for recipe {recipe_id}")
+        
+        return {"status": "success", "message": "Image supprimée"}
+        
+    except Exception as e:
+        logger.error(f"Error deleting image: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
+
+# Mount static files for uploads
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
