@@ -657,6 +657,65 @@ async def update_me(input: UserUpdate, current_user: dict = Depends(get_current_
         custom_filters=custom_filters
     )
 
+@api_router.post("/auth/forgot-password")
+async def forgot_password(input: ForgotPasswordRequest):
+    """Request password reset email"""
+    user = await db.users.find_one({"email": input.email}, {"_id": 0})
+    
+    # Always return success to prevent email enumeration
+    if not user:
+        logger.info(f"Password reset requested for non-existent email: {input.email}")
+        return {"status": "success", "message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+    
+    # Create reset token
+    reset_token = create_reset_token(user['id'])
+    
+    # Build reset URL (frontend URL)
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://recipe-box-7.preview.emergentagent.com')
+    reset_link = f"{frontend_url}/reset-password?token={reset_token}"
+    
+    # Generate email HTML
+    html_content = generate_reset_email_html(reset_link, user['name'])
+    
+    # Send email via Resend
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [input.email],
+        "subject": "Réinitialisation de votre mot de passe - Cooking Capture",
+        "html": html_content
+    }
+    
+    try:
+        email = await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Password reset email sent to {input.email}")
+        return {"status": "success", "message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+    except Exception as e:
+        logger.error(f"Failed to send reset email: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'envoi de l'email")
+
+@api_router.post("/auth/reset-password")
+async def reset_password(input: ResetPasswordRequest):
+    """Reset password using token"""
+    # Verify token and get user_id
+    user_id = verify_reset_token(input.token)
+    
+    # Validate password length
+    if len(input.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    
+    # Update password
+    new_hash = hash_password(input.new_password)
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"password_hash": new_hash}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    logger.info(f"Password reset successful for user {user_id}")
+    return {"status": "success", "message": "Mot de passe réinitialisé avec succès"}
+
 # ==================== FILTER ROUTES ====================
 
 @api_router.get("/filters")
