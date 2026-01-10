@@ -86,6 +86,8 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - POST /api/auth/register - Inscription
 - POST /api/auth/login - Connexion
 - GET /api/auth/me - Utilisateur courant
+- POST /api/auth/forgot-password - Demande de réinitialisation
+- POST /api/auth/reset-password - Réinitialiser le mot de passe
 
 ### Recipes
 - POST /api/recipes/extract - Extraire depuis URL
