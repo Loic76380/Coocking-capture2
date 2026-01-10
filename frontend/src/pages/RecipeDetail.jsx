@@ -57,6 +57,10 @@ const RecipeDetail = () => {
   const [editedIngredients, setEditedIngredients] = useState([]);
   const [editedSteps, setEditedSteps] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Image upload states
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
 
   const allFilters = getAllFilters();
 
