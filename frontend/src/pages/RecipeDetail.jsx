@@ -32,6 +32,8 @@ import {
   X,
   Plus,
   Trash2,
+  Upload,
+  ImageIcon,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
