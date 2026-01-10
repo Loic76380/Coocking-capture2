@@ -167,6 +167,13 @@ class TokenResponse(BaseModel):
     token: str
     user: UserResponse
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
