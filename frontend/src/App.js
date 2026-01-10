@@ -66,6 +66,10 @@ function AppContent() {
               } 
             />
             <Route 
+              path="/reset-password" 
+              element={<ResetPassword />} 
+            />
+            <Route 
               path="/directory" 
               element={
                 <ProtectedRoute>
