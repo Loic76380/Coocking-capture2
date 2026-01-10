@@ -461,10 +461,19 @@ const Directory = () => {
                 className="recipe-card group relative bg-white border border-stone-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all"
                 data-testid={`recipe-card-${recipe.id}`}
               >
-                <div className="h-24 bg-gradient-to-br from-primary/10 to-secondary/30 relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <ChefHat className="w-8 h-8 text-primary/30" />
-                  </div>
+                <div className="h-24 bg-gradient-to-br from-primary/10 to-secondary/30 relative overflow-hidden">
+                  {recipe.image_url ? (
+                    <img 
+                      src={`${BACKEND_URL}${recipe.image_url}`}
+                      alt={recipe.title}
+                      className="w-full h-full object-cover"
+                      data-testid={`recipe-image-${recipe.id}`}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ChefHat className="w-8 h-8 text-primary/30" />
+                    </div>
+                  )}
                   
                   {/* Source type badge */}
                   <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 rounded-full text-xs text-stone-600 flex items-center gap-1">
