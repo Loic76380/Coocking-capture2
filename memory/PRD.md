@@ -97,6 +97,15 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - POST /api/auth/forgot-password - Demande de réinitialisation
 - POST /api/auth/reset-password - Réinitialiser le mot de passe
 
+### Admin (réservé à loicchampanay@gmail.com)
+- GET /api/admin/stats - Statistiques du site
+- GET /api/admin/users - Liste des utilisateurs
+- POST /api/admin/users - Créer un utilisateur
+- DELETE /api/admin/users/{id} - Supprimer un utilisateur
+- DELETE /api/admin/users/by-email/{email} - Supprimer par email
+- POST /api/admin/email - Envoyer un email à des destinataires
+- POST /api/admin/email/all - Envoyer un email à tous les utilisateurs
+
 ### Recipes
 - POST /api/recipes/extract - Extraire depuis URL
 - POST /api/recipes/upload - Importer document
