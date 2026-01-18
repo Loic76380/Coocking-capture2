@@ -97,6 +97,14 @@ const Navbar = () => {
                         Mon compte
                       </Link>
                     </DropdownMenuItem>
+                    {user?.email === ADMIN_EMAIL && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center gap-2" data-testid="nav-admin">
+                          <Shield className="w-4 h-4" />
+                          Administration
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={handleLogout}
