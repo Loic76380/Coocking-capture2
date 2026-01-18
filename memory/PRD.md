@@ -81,6 +81,14 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - Beautiful HTML email template for password reset
 - Reset password page (/reset-password)
 
+### Phase 7 - Admin Dashboard (18 January 2026)
+- Admin-only page (/admin) accessible only to loicchampanay@gmail.com
+- Statistics dashboard: users, recipes, images, sources breakdown
+- User management: create and delete users
+- Activity view: recent users and recipes
+- Emailing system: send emails to specific users or all users
+- API endpoints: /api/admin/stats, /api/admin/users, /api/admin/email
+
 ## API Endpoints
 ### Authentication
 - POST /api/auth/register - Inscription
