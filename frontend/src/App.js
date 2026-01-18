@@ -53,10 +53,10 @@ const AuthRoute = ({ children }) => {
 
 function AppContent() {
   return (
-    <div className="App min-h-screen bg-background">
+    <div className="App min-h-screen bg-background flex flex-col">
       <BrowserRouter>
         <Navbar />
-        <main>
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route 
@@ -105,6 +105,7 @@ function AppContent() {
             />
           </Routes>
         </main>
+        <Footer />
         <Toaster position="bottom-right" richColors />
         <InstallPWA />
       </BrowserRouter>
