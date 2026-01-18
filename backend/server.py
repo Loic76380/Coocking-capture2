@@ -1137,6 +1137,230 @@ async def delete_recipe_image(
         logger.error(f"Error deleting image: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
 
+# ==================== ADMIN ROUTES ====================
+
+async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Verify the user is admin"""
+    user = await get_current_user(credentials)
+    if user['email'] != ADMIN_EMAIL:
+        raise HTTPException(status_code=403, detail="Accès réservé à l'administrateur")
+    return user
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(admin: dict = Depends(get_admin_user)):
+    """Get site statistics (admin only)"""
+    # Total counts
+    total_users = await db.users.count_documents({})
+    total_recipes = await db.recipes.count_documents({})
+    
+    # Count images
+    total_images = await db.recipes.count_documents({"image_url": {"$ne": None}})
+    
+    # Recent users (last 10)
+    recent_users_cursor = db.users.find(
+        {},
+        {"_id": 0, "id": 1, "email": 1, "name": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(10)
+    recent_users = await recent_users_cursor.to_list(length=10)
+    
+    # Recent recipes (last 10)
+    recent_recipes_cursor = db.recipes.find(
+        {},
+        {"_id": 0, "id": 1, "title": 1, "user_id": 1, "source_type": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(10)
+    recent_recipes = await recent_recipes_cursor.to_list(length=10)
+    
+    # Recipes by source type
+    recipes_by_source = {
+        "url": await db.recipes.count_documents({"source_type": "url"}),
+        "manual": await db.recipes.count_documents({"source_type": "manual"}),
+        "document": await db.recipes.count_documents({"source_type": "document"})
+    }
+    
+    # Top filters used
+    pipeline = [
+        {"$unwind": "$tags"},
+        {"$group": {"_id": "$tags", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    top_filters_cursor = db.recipes.aggregate(pipeline)
+    top_filters = await top_filters_cursor.to_list(length=10)
+    top_filters = [{"filter_id": f["_id"], "count": f["count"]} for f in top_filters]
+    
+    return {
+        "total_users": total_users,
+        "total_recipes": total_recipes,
+        "total_images": total_images,
+        "recent_users": recent_users,
+        "recent_recipes": recent_recipes,
+        "recipes_by_source": recipes_by_source,
+        "top_filters": top_filters
+    }
+
+@api_router.get("/admin/users")
+async def get_all_users(admin: dict = Depends(get_admin_user)):
+    """Get all users (admin only)"""
+    cursor = db.users.find(
+        {},
+        {"_id": 0, "password_hash": 0}
+    ).sort("created_at", -1)
+    users = await cursor.to_list(length=1000)
+    
+    # Add recipe count for each user
+    for user in users:
+        user['recipe_count'] = await db.recipes.count_documents({"user_id": user['id']})
+    
+    return {"users": users}
+
+@api_router.post("/admin/users")
+async def admin_create_user(user_data: AdminUserCreate, admin: dict = Depends(get_admin_user)):
+    """Create a new user (admin only)"""
+    # Check if email already exists
+    existing = await db.users.find_one({"email": user_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Un compte existe déjà avec cet email")
+    
+    # Create user
+    new_user = User(
+        email=user_data.email,
+        name=user_data.name,
+        password_hash=hash_password(user_data.password),
+        custom_filters=[]
+    )
+    
+    await db.users.insert_one(new_user.model_dump())
+    logger.info(f"Admin created user: {user_data.email}")
+    
+    return {
+        "status": "success",
+        "message": f"Utilisateur {user_data.email} créé avec succès",
+        "user": {
+            "id": new_user.id,
+            "email": new_user.email,
+            "name": new_user.name
+        }
+    }
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, admin: dict = Depends(get_admin_user)):
+    """Delete a user and all their data (admin only)"""
+    # Find user
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Prevent deleting admin
+    if user['email'] == ADMIN_EMAIL:
+        raise HTTPException(status_code=400, detail="Impossible de supprimer le compte administrateur")
+    
+    # Delete user's recipe images
+    user_recipes = db.recipes.find({"user_id": user_id}, {"_id": 0, "image_url": 1})
+    async for recipe in user_recipes:
+        if recipe.get('image_url'):
+            filename = recipe['image_url'].split('/')[-1]
+            file_path = UPLOADS_DIR / filename
+            if file_path.exists():
+                file_path.unlink()
+    
+    # Delete user's recipes
+    await db.recipes.delete_many({"user_id": user_id})
+    
+    # Delete user
+    await db.users.delete_one({"id": user_id})
+    
+    logger.info(f"Admin deleted user: {user['email']}")
+    
+    return {
+        "status": "success",
+        "message": f"Utilisateur {user['email']} et toutes ses données ont été supprimés"
+    }
+
+@api_router.delete("/admin/users/by-email/{email}")
+async def admin_delete_user_by_email(email: str, admin: dict = Depends(get_admin_user)):
+    """Delete a user by email (admin only)"""
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    return await admin_delete_user(user['id'], admin)
+
+@api_router.post("/admin/email")
+async def admin_send_email(email_data: AdminEmailRequest, admin: dict = Depends(get_admin_user)):
+    """Send email to users (admin only)"""
+    if not email_data.recipient_emails:
+        raise HTTPException(status_code=400, detail="Aucun destinataire spécifié")
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F9F8F6; margin: 0; padding: 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; overflow: hidden;">
+            <tr>
+                <td style="background: linear-gradient(135deg, #3A5A40 0%, #344E41 100%); padding: 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #FFFFFF; font-size: 24px;">Cooking Capture</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 30px;">
+                    <h2 style="margin: 0 0 20px; color: #1C1917; font-size: 20px;">{email_data.subject}</h2>
+                    <div style="color: #57534E; font-size: 16px; line-height: 1.6;">
+                        {email_data.message.replace(chr(10), '<br>')}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="background: #F5F5F4; padding: 20px; text-align: center;">
+                    <p style="margin: 0; color: #78716C; font-size: 12px;">
+                        Cooking Capture - Votre assistant culinaire
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    success_count = 0
+    failed_emails = []
+    
+    for recipient in email_data.recipient_emails:
+        try:
+            params = {
+                "from": SENDER_EMAIL,
+                "to": [recipient],
+                "subject": email_data.subject,
+                "html": html_content
+            }
+            await asyncio.to_thread(resend.Emails.send, params)
+            success_count += 1
+            logger.info(f"Admin email sent to {recipient}")
+        except Exception as e:
+            logger.error(f"Failed to send email to {recipient}: {str(e)}")
+            failed_emails.append(recipient)
+    
+    return {
+        "status": "success" if success_count > 0 else "error",
+        "message": f"{success_count} email(s) envoyé(s) sur {len(email_data.recipient_emails)}",
+        "failed_emails": failed_emails
+    }
+
+@api_router.post("/admin/email/all")
+async def admin_send_email_to_all(email_data: AdminEmailRequest, admin: dict = Depends(get_admin_user)):
+    """Send email to all users (admin only)"""
+    # Get all user emails
+    cursor = db.users.find({}, {"_id": 0, "email": 1})
+    users = await cursor.to_list(length=10000)
+    all_emails = [u['email'] for u in users]
+    
+    # Update recipient list
+    email_data.recipient_emails = all_emails
+    
+    return await admin_send_email(email_data, admin)
+
 # Include the router in the main app
 app.include_router(api_router)
 
