@@ -174,6 +174,28 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
+# Admin models
+ADMIN_EMAIL = "loicchampanay@gmail.com"
+
+class AdminUserCreate(BaseModel):
+    email: EmailStr
+    name: str
+    password: str
+
+class AdminEmailRequest(BaseModel):
+    subject: str
+    message: str
+    recipient_emails: List[EmailStr]  # List of emails to send to
+
+class AdminStatsResponse(BaseModel):
+    total_users: int
+    total_recipes: int
+    total_images: int
+    recent_users: List[dict]
+    recent_recipes: List[dict]
+    recipes_by_source: dict
+    top_filters: List[dict]
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
