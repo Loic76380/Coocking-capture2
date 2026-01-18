@@ -94,6 +94,14 @@ function AppContent() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </main>
         <Toaster position="bottom-right" richColors />
