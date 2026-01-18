@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { ChefHat, BookOpen, Home, User, LogOut } from "lucide-react";
+import { ChefHat, BookOpen, Home, User, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const ADMIN_EMAIL = "loicchampanay@gmail.com";
 
 const Navbar = () => {
   const location = useLocation();
