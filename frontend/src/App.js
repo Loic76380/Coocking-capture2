@@ -10,6 +10,7 @@ import Account from "@/pages/Account";
 import ResetPassword from "@/pages/ResetPassword";
 import Admin from "@/pages/Admin";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import InstallPWA from "@/components/InstallPWA";
 
 // Protected Route wrapper
