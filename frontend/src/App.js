@@ -105,6 +105,8 @@ function AppContent() {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/legal" element={<Legal />} />
+            <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </main>
         <Footer />
