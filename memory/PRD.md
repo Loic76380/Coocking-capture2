@@ -89,6 +89,14 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - Emailing system: send emails to specific users or all users
 - API endpoints: /api/admin/stats, /api/admin/users, /api/admin/email
 
+### Phase 8 - Legal & Privacy (19 January 2026)
+- Legal page (/legal) with mentions légales
+- Privacy policy page (/privacy) with RGPD compliance
+- Local storage option for offline recipe access
+- Export data functionality (JSON format)
+- Ko-fi donation button in footer
+- Footer with legal links
+
 ## API Endpoints
 ### Authentication
 - POST /api/auth/register - Inscription
