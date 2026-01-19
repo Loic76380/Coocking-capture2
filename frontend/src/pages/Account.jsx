@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Tag, Plus, Trash2, Palette } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { User, Mail, Tag, Plus, Trash2, HardDrive, Download, RefreshCw, Shield } from "lucide-react";
+import localStorageService from "@/services/localStorage";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const PRESET_COLORS = [
   "#EF4444", "#F59E0B", "#10B981", "#3B82F6", 
