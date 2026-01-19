@@ -28,6 +28,59 @@ const Account = () => {
   const [newFilterColor, setNewFilterColor] = useState("#6B7280");
   const [isAddingFilter, setIsAddingFilter] = useState(false);
 
+  // Local storage states
+  const [localStorageEnabled, setLocalStorageEnabled] = useState(false);
+  const [storageSize, setStorageSize] = useState("0 octets");
+  const [lastSync, setLastSync] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  useEffect(() => {
+    // Check local storage status
+    setLocalStorageEnabled(localStorageService.isEnabled());
+    setStorageSize(localStorageService.getStorageSize());
+    setLastSync(localStorageService.getLastSync());
+  }, []);
+
+  const handleToggleLocalStorage = async (enabled) => {
+    setLocalStorageEnabled(enabled);
+    localStorageService.setEnabled(enabled);
+    
+    if (enabled) {
+      // Sync recipes to local storage
+      await handleSyncToLocal();
+      toast.success("Stockage local activé ! Vos recettes sont sauvegardées sur cet appareil.");
+    } else {
+      setStorageSize("0 octets");
+      setLastSync(null);
+      toast.success("Stockage local désactivé. Les données locales ont été supprimées.");
+    }
+  };
+
+  const handleSyncToLocal = async () => {
+    if (!localStorageService.isEnabled()) return;
+    
+    setIsSyncing(true);
+    try {
+      const response = await axios.get(`${API}/recipes`);
+      localStorageService.saveRecipes(response.data);
+      setStorageSize(localStorageService.getStorageSize());
+      setLastSync(localStorageService.getLastSync());
+      toast.success("Recettes synchronisées localement !");
+    } catch (error) {
+      toast.error("Erreur lors de la synchronisation");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleExportData = () => {
+    if (localStorageService.exportData()) {
+      toast.success("Export téléchargé !");
+    } else {
+      toast.error("Aucune donnée à exporter");
+    }
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
