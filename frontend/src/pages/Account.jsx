@@ -178,6 +178,98 @@ const Account = () => {
           </CardContent>
         </Card>
 
+        {/* Local Storage Section */}
+        <Card className="mb-8 border-stone-200 shadow-soft" data-testid="storage-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HardDrive className="w-5 h-5 text-primary" />
+              Stockage Local
+            </CardTitle>
+            <CardDescription>
+              Conservez une copie de vos recettes sur votre appareil
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Toggle */}
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-1">
+                <Label htmlFor="local-storage" className="text-base font-medium">
+                  Activer le stockage local
+                </Label>
+                <p className="text-sm text-stone-500">
+                  Sauvegardez vos recettes sur cet appareil pour y accéder hors ligne
+                </p>
+              </div>
+              <Switch
+                id="local-storage"
+                checked={localStorageEnabled}
+                onCheckedChange={handleToggleLocalStorage}
+                data-testid="local-storage-toggle"
+              />
+            </div>
+
+            {localStorageEnabled && (
+              <>
+                {/* Storage Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <p className="text-sm text-stone-500">Espace utilisé</p>
+                    <p className="text-lg font-semibold text-foreground">{storageSize}</p>
+                  </div>
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <p className="text-sm text-stone-500">Dernière sync</p>
+                    <p className="text-lg font-semibold text-foreground">
+                      {lastSync ? lastSync.toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'Jamais'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={handleSyncToLocal}
+                    disabled={isSyncing}
+                    className="flex-1 rounded-full"
+                    data-testid="sync-local-btn"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                    Synchroniser
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleExportData}
+                    className="flex-1 rounded-full"
+                    data-testid="export-data-btn"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Exporter (JSON)
+                  </Button>
+                </div>
+
+                {/* Info */}
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-green-800">
+                      <p className="font-medium">Vos données restent privées</p>
+                      <p className="mt-1 text-green-700">
+                        Les données stockées localement restent uniquement sur votre appareil 
+                        et ne sont jamais partagées. Vous gardez le contrôle total.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Filters Section */}
         <Card className="border-stone-200 shadow-soft" data-testid="filters-card">
           <CardHeader>
