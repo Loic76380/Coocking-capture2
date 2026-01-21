@@ -193,6 +193,7 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [ ] **Bouton Contact** : Formulaire de contact sans dévoiler l'adresse email (utiliser un formulaire qui envoie via l'API backend)
 - [ ] **Admin - Export données utilisateur** : Permettre d'envoyer à un utilisateur un package avec toutes ses données personnelles (conformité RGPD - droit à la portabilité)
 - [ ] **Admin - Email individuel amélioré** : Interface dédiée pour écrire à une seule personne avec historique
+- [ ] **Retirer logo Emergent** : Supprimer la mention "Made with Emergent" de l'application
 
 ### P2 (Future)
 - [ ] Recipe sharing via public link
