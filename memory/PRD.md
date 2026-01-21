@@ -194,6 +194,15 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [ ] **Admin - Export données utilisateur** : Permettre d'envoyer à un utilisateur un package avec toutes ses données personnelles (conformité RGPD - droit à la portabilité)
 - [ ] **Admin - Email individuel amélioré** : Interface dédiée pour écrire à une seule personne avec historique
 - [ ] **Retirer logo Emergent** : Supprimer la mention "Made with Emergent" de l'application
+- [ ] **Admin - Modifier données utilisateur** : Permettre de corriger les données d'un utilisateur (RGPD - droit de rectification)
+- [ ] **Conformité RGPD complète** :
+  - Droit d'accès : voir toutes ses données ✅ (via export)
+  - Droit de rectification : modifier ses données (à implémenter côté admin)
+  - Droit à l'effacement : supprimer son compte ✅ (via admin)
+  - Droit à la portabilité : exporter ses données (à implémenter)
+  - Droit d'opposition : se désinscrire des communications
+  - Droit à la limitation : geler le traitement des données
+  - Consentement explicite : case à cocher à l'inscription
 
 ### P2 (Future)
 - [ ] Recipe sharing via public link
