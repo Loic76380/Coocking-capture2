@@ -183,19 +183,26 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [x] Inline editing
 - [x] PWA configuration
 - [x] Image upload for recipes
+- [x] Password recovery
+- [x] Admin dashboard
+- [x] Legal pages (mentions légales, politique confidentialité)
+- [x] Local storage option
+- [x] Ko-fi donation button
 
-### P1 (Next)
+### P1 (Next - User Requested)
+- [ ] **Bouton Contact** : Formulaire de contact sans dévoiler l'adresse email (utiliser un formulaire qui envoie via l'API backend)
+- [ ] **Admin - Export données utilisateur** : Permettre d'envoyer à un utilisateur un package avec toutes ses données personnelles (conformité RGPD - droit à la portabilité)
+- [ ] **Admin - Email individuel amélioré** : Interface dédiée pour écrire à une seule personne avec historique
+
+### P2 (Future)
 - [ ] Recipe sharing via public link
 - [ ] Recipe duplication
 - [ ] Bulk recipe export
-
-### P2 (Future)
 - [ ] Recipe search by ingredient
 - [ ] Weekly meal planning
 - [ ] Shopping list generation
 - [ ] Push notifications
 - [ ] Recipe rating/favorites
-- [ ] PDF guide generation fix
 
 ## Next Action Items
 1. Test PWA installation on real Android device
