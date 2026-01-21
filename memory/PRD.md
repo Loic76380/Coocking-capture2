@@ -195,6 +195,13 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [ ] **Admin - Email individuel amélioré** : Interface dédiée pour écrire à une seule personne avec historique
 - [ ] **Retirer logo Emergent** : Supprimer la mention "Made with Emergent" de l'application
 - [ ] **Admin - Modifier données utilisateur** : Permettre de corriger les données d'un utilisateur (RGPD - droit de rectification)
+- [ ] **Bannière Cookies** : Afficher une bannière d'acceptation des cookies sur la page de démarrage
+  - Expliquer que les cookies sont utilisés pour :
+    - Maintenir la session de connexion (token JWT stocké)
+    - Mémoriser les préférences utilisateur
+    - Permettre le stockage local des recettes
+  - Boutons : "Accepter" / "En savoir plus"
+  - Ne pas afficher si déjà accepté (mémoriser le choix)
 - [ ] **Conformité RGPD complète** :
   - Droit d'accès : voir toutes ses données ✅ (via export)
   - Droit de rectification : modifier ses données (à implémenter côté admin)
