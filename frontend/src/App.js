@@ -111,6 +111,7 @@ function AppContent() {
           </Routes>
         </main>
         <Footer />
+        <CookieBanner />
         <Toaster position="bottom-right" richColors />
         <InstallPWA />
       </BrowserRouter>
