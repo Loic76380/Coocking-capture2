@@ -75,6 +75,17 @@ const Admin = () => {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [sendToAll, setSendToAll] = useState(false);
 
+  // Edit user dialog
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [editUserData, setEditUserData] = useState({ name: "", email: "" });
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+
+  // Send data dialog
+  const [sendDataOpen, setSendDataOpen] = useState(false);
+  const [userToSendData, setUserToSendData] = useState(null);
+  const [isSendingData, setIsSendingData] = useState(false);
+
   // Check admin access
   useEffect(() => {
     if (!user) {
