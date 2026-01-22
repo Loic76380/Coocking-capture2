@@ -162,6 +162,65 @@ const Admin = () => {
     }
   };
 
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    if (!userToEdit) return;
+    
+    setIsUpdatingUser(true);
+    try {
+      await axios.put(`${API}/admin/users/${userToEdit.id}`, editUserData);
+      toast.success("Utilisateur mis à jour");
+      setEditUserOpen(false);
+      setUserToEdit(null);
+      loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de la mise à jour");
+    } finally {
+      setIsUpdatingUser(false);
+    }
+  };
+
+  const openEditDialog = (u) => {
+    setUserToEdit(u);
+    setEditUserData({ name: u.name, email: u.email });
+    setEditUserOpen(true);
+  };
+
+  const handleSendUserData = async () => {
+    if (!userToSendData) return;
+    
+    setIsSendingData(true);
+    try {
+      await axios.post(`${API}/admin/users/${userToSendData.id}/send-data`);
+      toast.success(`Données envoyées à ${userToSendData.email}`);
+      setSendDataOpen(false);
+      setUserToSendData(null);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
+    } finally {
+      setIsSendingData(false);
+    }
+  };
+
+  const handleExportUserData = async (userId) => {
+    try {
+      const response = await axios.get(`${API}/admin/users/${userId}/export`);
+      const dataStr = JSON.stringify(response.data, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `user-data-${userId}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Export téléchargé");
+    } catch (error) {
+      toast.error("Erreur lors de l'export");
+    }
+  };
+
   const handleSendEmail = async (e) => {
     e.preventDefault();
     if (!emailData.subject || !emailData.message) {
