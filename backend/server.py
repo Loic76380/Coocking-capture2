@@ -744,6 +744,26 @@ async def reset_password(input: ResetPasswordRequest):
     logger.info(f"Password reset successful for user {user_id}")
     return {"status": "success", "message": "Mot de passe réinitialisé avec succès"}
 
+# ==================== PUBLIC RECIPES ROUTE ====================
+
+@api_router.get("/recipes/public/recent")
+async def get_public_recent_recipes():
+    """Get recent public recipes for the sidebar (no auth required)"""
+    # Get recipes marked as public, sorted by date
+    cursor = db.recipes.find(
+        {"is_public": True},
+        {"_id": 0, "id": 1, "title": 1, "image_url": 1, "source_url": 1, "source_type": 1, "user_id": 1}
+    ).sort("created_at", -1).limit(20)
+    
+    recipes = await cursor.to_list(length=20)
+    
+    # Add user names
+    for recipe in recipes:
+        user = await db.users.find_one({"id": recipe.get("user_id")}, {"_id": 0, "name": 1})
+        recipe["user_name"] = user.get("name", "Anonyme") if user else "Anonyme"
+    
+    return {"recipes": recipes}
+
 # ==================== FILTER ROUTES ====================
 
 @api_router.get("/filters")
