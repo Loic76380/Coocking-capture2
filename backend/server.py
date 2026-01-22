@@ -1431,6 +1431,133 @@ async def admin_send_email_to_all(email_data: AdminEmailRequest, admin: dict = D
     
     return await admin_send_email(email_data, admin)
 
+class AdminUserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+@api_router.put("/admin/users/{user_id}")
+async def admin_update_user(user_id: str, user_data: AdminUserUpdate, admin: dict = Depends(get_admin_user)):
+    """Update a user's data (admin only) - RGPD droit de rectification"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    update_data = {}
+    if user_data.name:
+        update_data['name'] = user_data.name
+    if user_data.email:
+        # Check if new email is already used
+        existing = await db.users.find_one({"email": user_data.email, "id": {"$ne": user_id}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+        update_data['email'] = user_data.email
+    
+    if update_data:
+        await db.users.update_one({"id": user_id}, {"$set": update_data})
+        logger.info(f"Admin updated user {user_id}: {update_data}")
+    
+    return {"status": "success", "message": "Utilisateur mis à jour"}
+
+@api_router.get("/admin/users/{user_id}/export")
+async def admin_export_user_data(user_id: str, admin: dict = Depends(get_admin_user)):
+    """Export all user data (admin only) - RGPD droit à la portabilité"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Get all user's recipes
+    recipes_cursor = db.recipes.find({"user_id": user_id}, {"_id": 0})
+    recipes = await recipes_cursor.to_list(length=10000)
+    
+    export_data = {
+        "export_date": datetime.now(timezone.utc).isoformat(),
+        "user": user,
+        "recipes": recipes,
+        "total_recipes": len(recipes)
+    }
+    
+    return export_data
+
+@api_router.post("/admin/users/{user_id}/send-data")
+async def admin_send_user_data(user_id: str, admin: dict = Depends(get_admin_user)):
+    """Send all user data to their email (admin only) - RGPD droit à la portabilité"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    # Get export data
+    recipes_cursor = db.recipes.find({"user_id": user_id}, {"_id": 0})
+    recipes = await recipes_cursor.to_list(length=10000)
+    
+    # Format recipes for email
+    recipes_html = ""
+    for r in recipes:
+        recipes_html += f"""
+        <div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 8px;">
+            <h3 style="margin: 0 0 10px 0;">{r.get('title', 'Sans titre')}</h3>
+            <p><strong>Source:</strong> {r.get('source_type', 'N/A')}</p>
+            <p><strong>Créée le:</strong> {r.get('created_at', 'N/A')}</p>
+        </div>
+        """
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family: 'Segoe UI', sans-serif; background-color: #F9F8F6; margin: 0; padding: 20px;">
+        <table width="100%" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px;">
+            <tr>
+                <td style="background: linear-gradient(135deg, #3A5A40 0%, #344E41 100%); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0; color: #FFFFFF; font-size: 20px;">📦 Vos données Cooking Capture</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 30px;">
+                    <p>Bonjour {user.get('name', '')},</p>
+                    <p>Conformément à votre demande et au RGPD (droit à la portabilité), voici l'ensemble de vos données personnelles stockées sur Cooking Capture :</p>
+                    
+                    <h2 style="border-bottom: 2px solid #3A5A40; padding-bottom: 10px;">👤 Informations du compte</h2>
+                    <ul>
+                        <li><strong>Nom:</strong> {user.get('name', 'N/A')}</li>
+                        <li><strong>Email:</strong> {user.get('email', 'N/A')}</li>
+                        <li><strong>Date d'inscription:</strong> {user.get('created_at', 'N/A')}</li>
+                    </ul>
+                    
+                    <h2 style="border-bottom: 2px solid #3A5A40; padding-bottom: 10px;">📖 Vos recettes ({len(recipes)})</h2>
+                    {recipes_html if recipes else '<p>Aucune recette enregistrée.</p>'}
+                    
+                    <p style="margin-top: 30px; color: #666; font-size: 12px;">
+                        Pour toute question ou demande de suppression, contactez-nous via le formulaire de contact sur le site.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="background: #F5F5F4; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
+                    <p style="margin: 0; color: #78716C; font-size: 12px;">
+                        Cooking Capture - https://coocking-capture.fr
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [user['email']],
+        "subject": "Vos données Cooking Capture (RGPD)",
+        "html": html_content
+    }
+    
+    try:
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"User data sent to {user['email']}")
+        return {"status": "success", "message": f"Données envoyées à {user['email']}"}
+    except Exception as e:
+        logger.error(f"Failed to send user data: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'envoi des données")
+
 # Include the router in the main app
 app.include_router(api_router)
 
