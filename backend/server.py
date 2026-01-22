@@ -975,6 +975,8 @@ async def update_recipe(recipe_id: str, input: RecipeUpdate, current_user: dict 
         update_data['ingredients'] = [ing.model_dump() for ing in input.ingredients]
     if input.steps is not None:
         update_data['steps'] = [step.model_dump() for step in input.steps]
+    if input.is_public is not None:
+        update_data['is_public'] = input.is_public
     
     if not update_data:
         raise HTTPException(status_code=400, detail="Aucune modification fournie")
