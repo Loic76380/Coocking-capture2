@@ -34,6 +34,9 @@ import {
   Trash2,
   Upload,
   ImageIcon,
+  Share2,
+  Copy,
+  Smartphone,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
