@@ -351,6 +351,21 @@ const RecipeDetail = () => {
     }
   };
 
+  // Toggle public visibility
+  const handleTogglePublic = async (newValue) => {
+    setIsSavingVisibility(true);
+    try {
+      await axios.put(`${API}/recipes/${id}`, { is_public: newValue });
+      setIsPublic(newValue);
+      setRecipe({ ...recipe, is_public: newValue });
+      toast.success(newValue ? "Recette visible publiquement" : "Recette masquée");
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setIsSavingVisibility(false);
+    }
+  };
+
   const row1Filters = allFilters.filter(f => f.row === 1);
   const row2Filters = allFilters.filter(f => f.row === 2);
   const row3Filters = allFilters.filter(f => f.row === 3);
