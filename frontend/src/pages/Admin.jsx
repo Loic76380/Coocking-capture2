@@ -398,7 +398,7 @@ const Admin = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Gestion des utilisateurs</CardTitle>
-                  <CardDescription>Ajouter ou supprimer des comptes</CardDescription>
+                  <CardDescription>Ajouter, modifier ou supprimer des comptes (RGPD)</CardDescription>
                 </div>
                 <Button onClick={() => setCreateUserOpen(true)}>
                   <UserPlus className="w-4 h-4 mr-2" />
@@ -413,7 +413,7 @@ const Admin = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Recettes</TableHead>
                       <TableHead>Inscription</TableHead>
-                      <TableHead className="w-20">Actions</TableHead>
+                      <TableHead className="w-40">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -429,15 +429,49 @@ const Admin = () => {
                         <TableCell>{u.recipe_count || 0}</TableCell>
                         <TableCell>{formatDate(u.created_at)}</TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => { setUserToDelete(u); setDeleteUserOpen(true); }}
-                            disabled={u.email === ADMIN_EMAIL}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            {/* Edit button */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              onClick={() => openEditDialog(u)}
+                              title="Modifier (Droit de rectification)"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            {/* Export data */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() => handleExportUserData(u.id)}
+                              title="Télécharger les données"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            {/* Send data by email */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                              onClick={() => { setUserToSendData(u); setSendDataOpen(true); }}
+                              title="Envoyer les données par email"
+                            >
+                              <Package className="w-4 h-4" />
+                            </Button>
+                            {/* Delete */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => { setUserToDelete(u); setDeleteUserOpen(true); }}
+                              disabled={u.email === ADMIN_EMAIL}
+                              title="Supprimer (Droit à l'effacement)"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
