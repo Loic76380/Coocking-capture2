@@ -37,6 +37,8 @@ import {
   Share2,
   Copy,
   Smartphone,
+  Globe,
+  EyeOff,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
