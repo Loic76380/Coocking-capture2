@@ -705,6 +705,85 @@ const Admin = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit User Dialog - RGPD Droit de rectification */}
+      <Dialog open={editUserOpen} onOpenChange={setEditUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier l'utilisateur</DialogTitle>
+            <DialogDescription>
+              Droit de rectification (RGPD) - Modifier les données de <strong>{userToEdit?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditUser} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nom</Label>
+              <Input
+                id="edit-name"
+                value={editUserData.name}
+                onChange={(e) => setEditUserData({ ...editUserData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editUserData.email}
+                onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditUserOpen(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={isUpdatingUser}>
+                {isUpdatingUser ? "Mise à jour..." : "Enregistrer"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Data Dialog - RGPD Droit à la portabilité */}
+      <Dialog open={sendDataOpen} onOpenChange={setSendDataOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Envoyer les données</DialogTitle>
+            <DialogDescription>
+              Droit à la portabilité (RGPD) - Envoyer toutes les données de <strong>{userToSendData?.name}</strong> à son adresse email <strong>{userToSendData?.email}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="p-4 bg-blue-50 rounded-lg text-sm text-blue-800">
+              <p className="font-medium mb-2">📦 Contenu du package :</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Informations du compte (nom, email, date d'inscription)</li>
+                <li>Liste de toutes les recettes</li>
+                <li>Filtres personnalisés</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSendDataOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendUserData} disabled={isSendingData}>
+              {isSendingData ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  Envoi...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Envoyer par email
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
