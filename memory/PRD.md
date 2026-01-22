@@ -207,6 +207,14 @@ Application complète de gestion de recettes de cuisine permettant de récupére
   - Utiliser le client email de l'utilisateur (mailto: ou API Web Share)
   - Laisser l'utilisateur choisir son application d'envoi (Gmail, Outlook, etc.)
   - Avantages : pas de dépendance à Resend, fonctionne toujours, plus flexible
+- [ ] **Bandeau latéral dernières recettes** : Sur la page d'accueil
+  - Bandeau défilant avec les dernières recettes importées par tous les utilisateurs
+  - Affiche : nom de la recette + photo du plat (si disponible)
+  - Au clic :
+    - Si recette importée depuis URL → redirige vers le site web d'origine
+    - Si recette créée manuellement ou importée d'un document → interface pour demander la recette au propriétaire
+  - Permet la découverte de recettes entre utilisateurs
+  - Option pour l'utilisateur de rendre sa recette visible ou non dans ce bandeau (vie privée)
 - [ ] **Conformité RGPD complète** :
   - Droit d'accès : voir toutes ses données ✅ (via export)
   - Droit de rectification : modifier ses données (à implémenter côté admin)
