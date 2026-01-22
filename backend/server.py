@@ -196,6 +196,12 @@ class AdminStatsResponse(BaseModel):
     recipes_by_source: dict
     top_filters: List[dict]
 
+class ContactRequest(BaseModel):
+    name: str
+    email: EmailStr
+    subject: Optional[str] = ""
+    message: str
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
