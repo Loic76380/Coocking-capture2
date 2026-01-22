@@ -64,6 +64,10 @@ const RecipeDetail = () => {
   // Image upload states
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDeletingImage, setIsDeletingImage] = useState(false);
+  
+  // Public visibility state
+  const [isPublic, setIsPublic] = useState(false);
+  const [isSavingVisibility, setIsSavingVisibility] = useState(false);
 
   const allFilters = getAllFilters();
 
@@ -78,6 +82,7 @@ const RecipeDetail = () => {
       setSelectedTags(response.data.tags || []);
       setEditedIngredients(response.data.ingredients || []);
       setEditedSteps(response.data.steps || []);
+      setIsPublic(response.data.is_public || false);
     } catch (error) {
       console.error("Error fetching recipe:", error);
       toast.error("Recette non trouvée");
