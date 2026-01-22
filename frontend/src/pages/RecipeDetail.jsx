@@ -84,23 +84,86 @@ const RecipeDetail = () => {
     }
   };
 
-  const handleSendEmail = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) {
-      toast.error("Veuillez entrer une adresse email");
+  // Format recipe for sharing
+  const formatRecipeForEmail = () => {
+    if (!recipe) return { subject: "", body: "" };
+    
+    const subject = `Recette : ${recipe.title}`;
+    
+    let body = `🍳 ${recipe.title}\n\n`;
+    
+    if (recipe.description) {
+      body += `${recipe.description}\n\n`;
+    }
+    
+    // Meta info
+    const meta = [];
+    if (recipe.prep_time) meta.push(`⏱️ Préparation : ${recipe.prep_time}`);
+    if (recipe.cook_time) meta.push(`🔥 Cuisson : ${recipe.cook_time}`);
+    if (recipe.servings) meta.push(`👥 Portions : ${recipe.servings}`);
+    if (meta.length > 0) body += meta.join(" | ") + "\n\n";
+    
+    // Ingredients
+    body += "📝 INGRÉDIENTS\n";
+    body += "─────────────\n";
+    recipe.ingredients?.forEach(ing => {
+      body += `• ${ing.quantity || ""} ${ing.unit || ""} ${ing.name}\n`;
+    });
+    body += "\n";
+    
+    // Steps
+    body += "👨‍🍳 PRÉPARATION\n";
+    body += "─────────────\n";
+    recipe.steps?.forEach((step, i) => {
+      body += `${i + 1}. ${step.instruction}\n\n`;
+    });
+    
+    // Promo link
+    body += "─────────────────────────────\n";
+    body += "🍳 Recette partagée via Cooking Capture\n";
+    body += "Découvrez l'application : https://coocking-capture.fr\n";
+    
+    return { subject, body };
+  };
+
+  const handleShareEmail = () => {
+    const { subject, body } = formatRecipeForEmail();
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+    toast.success("Ouverture de votre application email...");
+    setIsDialogOpen(false);
+  };
+
+  const handleShareNative = async () => {
+    if (!navigator.share) {
+      handleShareEmail();
       return;
     }
-    setIsSending(true);
+    
+    const { subject, body } = formatRecipeForEmail();
+    
     try {
-      await axios.post(`${API}/recipes/${id}/send-email`, { recipient_email: email });
-      toast.success("Recette envoyée !");
-      setEmail("");
+      await navigator.share({
+        title: subject,
+        text: body,
+      });
+      toast.success("Recette partagée !");
       setIsDialogOpen(false);
     } catch (error) {
-      const message = error.response?.data?.detail || "Erreur lors de l'envoi";
-      toast.error(message);
-    } finally {
-      setIsSending(false);
+      if (error.name !== 'AbortError') {
+        // Fallback to mailto
+        handleShareEmail();
+      }
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    const { body } = formatRecipeForEmail();
+    try {
+      await navigator.clipboard.writeText(body);
+      toast.success("Recette copiée dans le presse-papier !");
+    } catch (error) {
+      toast.error("Impossible de copier");
     }
   };
 
