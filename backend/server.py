@@ -135,6 +135,7 @@ class Recipe(BaseModel):
     ingredients: List[Ingredient] = []
     steps: List[RecipeStep] = []
     tags: List[str] = []  # List of filter IDs
+    is_public: bool = False  # Whether recipe appears in public sidebar
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class RecipeCreate(BaseModel):
