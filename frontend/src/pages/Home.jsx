@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Search, ArrowRight, Utensils, Clock, Users, Sparkles, Lock, Upload, FileText, Image, File } from "lucide-react";
+import RecipeSidebar from "@/components/RecipeSidebar";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -157,10 +158,12 @@ const Home = () => {
 
   return (
     <div className="min-h-[calc(100vh-56px)]" data-testid="home-page">
-      {/* Hero Section */}
+      {/* Hero Section with Sidebar */}
       <section className="hero-gradient py-10 md:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center animate-fade-in">
+          <div className="flex gap-8">
+            {/* Main Content */}
+            <div className="flex-1 max-w-3xl mx-auto text-center animate-fade-in">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/30 text-primary text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
@@ -290,6 +293,12 @@ const Home = () => {
                 Connexion requise pour extraire des recettes
               </p>
             )}
+            </div>
+            
+            {/* Recipe Sidebar - Hidden on mobile */}
+            <div className="hidden lg:block flex-shrink-0">
+              <RecipeSidebar />
+            </div>
           </div>
         </div>
       </section>
