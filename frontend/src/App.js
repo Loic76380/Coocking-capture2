@@ -11,6 +11,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Admin from "@/pages/Admin";
 import Legal from "@/pages/Legal";
 import Privacy from "@/pages/Privacy";
+import Contact from "@/pages/Contact";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
