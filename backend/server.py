@@ -1143,6 +1143,70 @@ async def delete_recipe_image(
         logger.error(f"Error deleting image: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
 
+# ==================== CONTACT ROUTE ====================
+
+@api_router.post("/contact")
+async def send_contact_message(contact: ContactRequest):
+    """Send a contact message to the admin"""
+    subject = contact.subject or "Message depuis Cooking Capture"
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family: 'Segoe UI', sans-serif; background-color: #F9F8F6; margin: 0; padding: 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px;">
+            <tr>
+                <td style="background: linear-gradient(135deg, #3A5A40 0%, #344E41 100%); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0; color: #FFFFFF; font-size: 20px;">📬 Nouveau message de contact</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 30px;">
+                    <table style="width: 100%; margin-bottom: 20px;">
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <strong>De :</strong> {contact.name}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <strong>Email :</strong> <a href="mailto:{contact.email}">{contact.email}</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <strong>Sujet :</strong> {subject}
+                            </td>
+                        </tr>
+                    </table>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <strong>Message :</strong>
+                        <p style="white-space: pre-wrap; margin-top: 10px;">{contact.message}</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [ADMIN_EMAIL],
+        "subject": f"[Contact] {subject}",
+        "html": html_content,
+        "reply_to": contact.email
+    }
+    
+    try:
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Contact message received from {contact.email}")
+        return {"status": "success", "message": "Message envoyé avec succès"}
+    except Exception as e:
+        logger.error(f"Failed to send contact message: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'envoi du message")
+
 # ==================== ADMIN ROUTES ====================
 
 async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
