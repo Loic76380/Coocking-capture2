@@ -207,6 +207,8 @@ Application complète de gestion de recettes de cuisine permettant de récupére
   - Utiliser le client email de l'utilisateur (mailto: ou API Web Share)
   - Laisser l'utilisateur choisir son application d'envoi (Gmail, Outlook, etc.)
   - Avantages : pas de dépendance à Resend, fonctionne toujours, plus flexible
+  - **Ajouter un lien promotionnel** vers https://coocking-capture.fr dans le footer de l'email
+    - Exemple : "Recette envoyée via Cooking Capture - Découvrez l'app sur coocking-capture.fr"
 - [ ] **Bandeau latéral dernières recettes** : Sur la page d'accueil
   - Bandeau défilant avec les dernières recettes importées par tous les utilisateurs
   - Affiche : nom de la recette + photo du plat (si disponible)
