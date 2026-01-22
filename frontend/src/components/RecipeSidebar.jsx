@@ -96,20 +96,21 @@ const RecipeSidebar = () => {
 
   return (
     <>
-      <div className="w-64 bg-white/80 backdrop-blur-sm rounded-xl border border-stone-200/50 overflow-hidden shadow-soft" data-testid="recipe-sidebar">
+      <div className="w-full lg:w-64 bg-white/80 backdrop-blur-sm rounded-xl border border-stone-200/50 overflow-hidden shadow-soft" data-testid="recipe-sidebar">
         <div className="p-3 bg-primary/5 border-b border-stone-100">
           <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
             <ChefHat className="w-4 h-4 text-primary" />
-            Dernières recettes
+            Dernières recettes partagées
           </h3>
         </div>
         
-        <div className="max-h-[400px] overflow-y-auto">
+        {/* Horizontal scroll on mobile, vertical on desktop */}
+        <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-hidden lg:overflow-y-auto lg:max-h-[400px] gap-2 lg:gap-0 p-2 lg:p-0">
           {recipes.map((recipe, index) => (
             <button
               key={recipe.id}
               onClick={() => handleRecipeClick(recipe)}
-              className="w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors border-b border-stone-100/50 last:border-b-0 text-left"
+              className="flex-shrink-0 w-48 lg:w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors lg:border-b border-stone-100/50 last:border-b-0 text-left rounded-lg lg:rounded-none bg-white lg:bg-transparent"
               data-testid={`sidebar-recipe-${index}`}
             >
               {/* Image or placeholder */}
