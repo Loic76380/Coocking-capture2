@@ -25,6 +25,10 @@ const Footer = () => {
 
         {/* Legal Links */}
         <div className="flex items-center gap-4 text-sm text-stone-500">
+          <Link to="/contact" className="hover:text-primary transition-colors">
+            Contact
+          </Link>
+          <span>•</span>
           <Link to="/legal" className="hover:text-primary transition-colors">
             Mentions légales
           </Link>
