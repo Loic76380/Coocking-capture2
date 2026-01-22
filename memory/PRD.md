@@ -29,75 +29,62 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [x] Afficher liste/répertoire des recettes
 - [x] Afficher détail avec ingrédients et étapes
 - [x] Édition en ligne des ingrédients et étapes
-- [x] Envoyer recette par email
+- [x] Envoyer recette par email (mailto: avec lien promotionnel)
 - [x] PWA installable sur Android/iOS
 - [x] Authentification utilisateur (inscription/connexion)
 - [x] Filtres prédéfinis et personnalisés
 - [x] Upload et gestion d'images pour recettes
 
-## What's Been Implemented (January 2026)
+## What's Been Implemented
 
-### Phase 1 - MVP
-- Complete recipe extraction via AI (GPT-4o)
-- Recipe directory with card view
-- Recipe detail page with ingredients, quantities, steps
-- Email sending functionality (Resend API)
-- Beautiful organic/earthy design theme
+### Phase 1-7 - MVP to Admin Dashboard
+*Completed in previous sessions - See CHANGELOG.md for details*
 
-### Phase 2 - Authentication & Filters
-- User registration and login (JWT)
-- Private recipes per user
-- Account management page with first name
-- Default filters: Apéro, Entrées, Plats, Desserts, Salade, Petites envies, Sauces, Salé, Sucré, Viande, Poisson
-- Custom filters creation with color picker
-- Tag recipes with categories
-- Filter recipes in directory view
+### Phase 8 - P1 Features Batch (22 January 2026)
 
-### Phase 3 - Creation & Editing
-- Manual recipe creation form
-- Document import (PDF, Word, images)
-- Inline editing of ingredients and steps
-- URL auto-cleaning (removes text before http/https)
-- Personalized page title "La boîte à recettes de [prénom]"
+#### Bandeau Latéral des Dernières Recettes
+- [x] Composant `RecipeSidebar.jsx` créé avec liste scrollable
+- [x] Intégration dans `Home.jsx` (visible sur desktop, caché mobile)
+- [x] API `GET /api/recipes/public/recent` retourne recettes publiques
+- [x] Clic sur recette URL → ouvre le site d'origine
+- [x] Clic sur recette manuelle → dialogue de demande de recette
 
-### Phase 4 - PWA
-- Service Worker configuration
-- Web App Manifest
-- Install prompt component
-- Offline-capable
+#### Toggle Visibilité Public/Privé
+- [x] Section "Visibilité" ajoutée dans `RecipeDetail.jsx`
+- [x] Switch toggle avec icône Globe (public) / EyeOff (privé)
+- [x] Champ `is_public` ajouté au modèle `RecipeUpdate`
+- [x] Route `PUT /api/recipes/{id}` supporte `is_public`
+- [x] Recettes publiques apparaissent dans le sidebar
 
-### Phase 5 - Image Upload (10 January 2026)
-- Image upload for recipes (POST /api/recipes/{id}/upload-image)
-- Automatic image compression (Pillow, max 1200px, JPEG quality 85%)
-- Image display on recipe cards (Directory.jsx)
-- Image management on detail page (upload/modify/delete)
-- Image deletion endpoint (DELETE /api/recipes/{id}/image)
-- Static file serving (/api/uploads/{filename})
+#### Bannière de Consentement Cookies
+- [x] Composant `CookieBanner.jsx` créé
+- [x] Explique l'utilisation des cookies techniques
+- [x] Boutons "Accepter" et "Refuser"
+- [x] Mémorise le choix dans localStorage
+- [x] S'affiche une seule fois par utilisateur
 
-### Phase 6 - Password Recovery (10 January 2026)
-- Forgot password flow (POST /api/auth/forgot-password)
-- Password reset via email link (POST /api/auth/reset-password)
-- Reset token valid for 1 hour
-- Beautiful HTML email template for password reset
-- Reset password page (/reset-password)
+#### Formulaire de Contact
+- [x] Page `/contact` avec formulaire
+- [x] Route `POST /api/contact` envoie email à l'admin
+- [x] L'adresse email admin n'est pas exposée au frontend
+- [x] Confirmation visuelle après envoi
 
-### Phase 7 - Admin Dashboard (18 January 2026)
-- Admin-only page (/admin) accessible only to loicchampanay@gmail.com
-- Statistics dashboard: users, recipes, images, sources breakdown
-- User management: create and delete users
-- Activity view: recent users and recipes
-- Emailing system: send emails to specific users or all users
-- API endpoints: /api/admin/stats, /api/admin/users, /api/admin/email
+#### Fonctions Admin RGPD
+- [x] `PUT /api/admin/users/{id}` - Modifier utilisateur (droit de rectification)
+- [x] `GET /api/admin/users/{id}/export` - Export données JSON
+- [x] `POST /api/admin/users/{id}/send-data` - Envoi données par email (portabilité)
+- [x] Interface dans Admin.jsx avec boutons pour chaque action
 
-### Phase 8 - Legal & Privacy (19 January 2026)
-- Legal page (/legal) with mentions légales
-- Privacy policy page (/privacy) with RGPD compliance
-- Local storage option for offline recipe access
-- Export data functionality (JSON format)
-- Ko-fi donation button in footer
-- Footer with legal links
+#### Partage de Recette Amélioré
+- [x] Utilise `mailto:` avec l'app email de l'utilisateur
+- [x] Inclut lien promotionnel vers https://coocking-capture.fr
+- [x] Options : Email, Partage natif (Web Share API), Copier
+
+#### Suppression Logo Emergent
+- [x] Badge Emergent commenté dans `index.html`
 
 ## API Endpoints
+
 ### Authentication
 - POST /api/auth/register - Inscription
 - POST /api/auth/login - Connexion
@@ -105,12 +92,19 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - POST /api/auth/forgot-password - Demande de réinitialisation
 - POST /api/auth/reset-password - Réinitialiser le mot de passe
 
+### Public
+- GET /api/recipes/public/recent - Dernières recettes publiques
+- POST /api/contact - Formulaire de contact
+
 ### Admin (réservé à loicchampanay@gmail.com)
 - GET /api/admin/stats - Statistiques du site
 - GET /api/admin/users - Liste des utilisateurs
 - POST /api/admin/users - Créer un utilisateur
 - DELETE /api/admin/users/{id} - Supprimer un utilisateur
 - DELETE /api/admin/users/by-email/{email} - Supprimer par email
+- PUT /api/admin/users/{id} - Modifier utilisateur (RGPD rectification)
+- GET /api/admin/users/{id}/export - Export données utilisateur
+- POST /api/admin/users/{id}/send-data - Envoi données par email
 - POST /api/admin/email - Envoyer un email à des destinataires
 - POST /api/admin/email/all - Envoyer un email à tous les utilisateurs
 
@@ -120,7 +114,7 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - POST /api/recipes/manual - Création manuelle
 - GET /api/recipes - Liste des recettes
 - GET /api/recipes/{id} - Détail recette
-- PUT /api/recipes/{id} - Modifier recette
+- PUT /api/recipes/{id} - Modifier recette (incl. is_public)
 - DELETE /api/recipes/{id} - Supprimer recette
 - POST /api/recipes/{id}/send-email - Envoyer par email
 - POST /api/recipes/{id}/upload-image - Upload image
@@ -132,6 +126,7 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - DELETE /api/filters/{id} - Supprimer filtre
 
 ## Database Schema
+
 ### users
 ```json
 {
@@ -154,6 +149,7 @@ Application complète de gestion de recettes de cuisine permettant de récupére
   "source_url": "string",
   "source_type": "url|manual|document",
   "image_url": "string|null",
+  "is_public": "boolean (default: false)",
   "prep_time": "string",
   "cook_time": "string",
   "servings": "string",
@@ -166,6 +162,7 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 
 ## Test Reports
 - /app/test_reports/iteration_6.json - Image upload tests (13/13 passed)
+- /app/test_reports/iteration_7.json - P1 features tests (17/17 passed, 100% frontend)
 
 ## Known Issues
 - **P2**: Génération de PDF pour guide de déploiement échoue (caractères spéciaux avec pandoc)
@@ -189,44 +186,20 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [x] Local storage option
 - [x] Ko-fi donation button
 
-### P1 (Next - User Requested)
-- [ ] **Bouton Contact** : Formulaire de contact sans dévoiler l'adresse email (utiliser un formulaire qui envoie via l'API backend)
-- [ ] **Admin - Export données utilisateur** : Permettre d'envoyer à un utilisateur un package avec toutes ses données personnelles (conformité RGPD - droit à la portabilité)
-- [ ] **Admin - Email individuel amélioré** : Interface dédiée pour écrire à une seule personne avec historique
-- [ ] **Retirer logo Emergent** : Supprimer la mention "Made with Emergent" de l'application
-- [ ] **Admin - Modifier données utilisateur** : Permettre de corriger les données d'un utilisateur (RGPD - droit de rectification)
-- [ ] **Bannière Cookies** : Afficher une bannière d'acceptation des cookies sur la page de démarrage
-  - Expliquer que les cookies sont utilisés pour :
-    - Maintenir la session de connexion (token JWT stocké)
-    - Mémoriser les préférences utilisateur
-    - Permettre le stockage local des recettes
-  - Boutons : "Accepter" / "En savoir plus"
-  - Ne pas afficher si déjà accepté (mémoriser le choix)
-- [ ] **Corriger envoi recettes par email** : Le processus actuel bloque
-  - Nouvelle approche : formater la recette en texte/HTML propre
-  - Utiliser le client email de l'utilisateur (mailto: ou API Web Share)
-  - Laisser l'utilisateur choisir son application d'envoi (Gmail, Outlook, etc.)
-  - Avantages : pas de dépendance à Resend, fonctionne toujours, plus flexible
-  - **Ajouter un lien promotionnel** vers https://coocking-capture.fr dans le footer de l'email
-    - Exemple : "Recette envoyée via Cooking Capture - Découvrez l'app sur coocking-capture.fr"
-- [ ] **Bandeau latéral dernières recettes** : Sur la page d'accueil
-  - Bandeau défilant avec les dernières recettes importées par tous les utilisateurs
-  - Affiche : nom de la recette + photo du plat (si disponible)
-  - Au clic :
-    - Si recette importée depuis URL → redirige vers le site web d'origine
-    - Si recette créée manuellement ou importée d'un document → interface pour demander la recette au propriétaire
-  - Permet la découverte de recettes entre utilisateurs
-  - Option pour l'utilisateur de rendre sa recette visible ou non dans ce bandeau (vie privée)
-- [ ] **Conformité RGPD complète** :
-  - Droit d'accès : voir toutes ses données ✅ (via export)
-  - Droit de rectification : modifier ses données (à implémenter côté admin)
-  - Droit à l'effacement : supprimer son compte ✅ (via admin)
-  - Droit à la portabilité : exporter ses données (à implémenter)
-  - Droit d'opposition : se désinscrire des communications
-  - Droit à la limitation : geler le traitement des données
-  - Consentement explicite : case à cocher à l'inscription
+### P1 (Complete - 22 January 2026)
+- [x] Bandeau latéral dernières recettes
+- [x] Toggle visibilité public/privé
+- [x] Bannière cookies
+- [x] Formulaire de contact
+- [x] Fonctions admin RGPD (modifier, export, envoi données)
+- [x] Partage recette via mailto avec lien promo
+- [x] Retirer logo Emergent
 
-### P2 (Future)
+### P2 (Next)
+- [ ] Conformité RGPD complète:
+  - [ ] Case à cocher consentement inscription
+  - [ ] Droit d'opposition (désinscription communications)
+- [ ] Email individuel amélioré depuis admin
 - [ ] Recipe sharing via public link
 - [ ] Recipe duplication
 - [ ] Bulk recipe export
@@ -237,16 +210,17 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 - [ ] Recipe rating/favorites
 
 ## Next Action Items
-1. Test PWA installation on real Android device
-2. Consider adding recipe sharing functionality
-3. Implement shopping list from recipe ingredients
+1. Ajouter case à cocher consentement RGPD à l'inscription
+2. Implémenter le droit d'opposition aux communications
+3. Tester le déploiement sur VPS avec les nouvelles fonctionnalités
+4. Considérer l'ajout d'une fonctionnalité de liste de courses
 
 ## Files of Reference
-- `/app/backend/server.py` - Main backend file
-- `/app/frontend/src/pages/Directory.jsx` - Recipe list
-- `/app/frontend/src/pages/RecipeDetail.jsx` - Recipe detail with image
-- `/app/frontend/src/pages/Home.jsx` - Home page
-- `/app/frontend/src/pages/Auth.jsx` - Login/Register
-- `/app/frontend/src/pages/Account.jsx` - User account
-- `/app/frontend/src/context/AuthContext.jsx` - Auth context
-- `/app/tests/test_image_upload.py` - Image upload tests
+- `/app/backend/server.py` - Main backend file (1600+ lines - needs refactoring)
+- `/app/frontend/src/pages/Home.jsx` - Home page with RecipeSidebar
+- `/app/frontend/src/components/RecipeSidebar.jsx` - Public recipes sidebar
+- `/app/frontend/src/pages/RecipeDetail.jsx` - Recipe detail with visibility toggle
+- `/app/frontend/src/components/CookieBanner.jsx` - Cookie consent banner
+- `/app/frontend/src/pages/Contact.jsx` - Contact form
+- `/app/frontend/src/pages/Admin.jsx` - Admin dashboard with RGPD functions
+- `/app/frontend/src/components/Footer.jsx` - Footer with legal links and Ko-fi
