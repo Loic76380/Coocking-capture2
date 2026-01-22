@@ -755,48 +755,69 @@ const RecipeDetail = () => {
                 </ul>
               </Card>
 
-              {/* Email CTA Card */}
-              <Card className="p-4 rounded-xl border-primary/20 bg-primary/5" data-testid="email-cta">
+              {/* Share CTA Card */}
+              <Card className="p-4 rounded-xl border-primary/20 bg-primary/5" data-testid="share-cta">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <Mail className="w-4 h-4 text-primary-foreground" />
+                    <Share2 className="w-4 h-4 text-primary-foreground" />
                   </div>
-                  <h3 className="font-medium text-foreground text-sm">Envoyer par email</h3>
+                  <h3 className="font-medium text-foreground text-sm">Partager la recette</h3>
                 </div>
                 
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full rounded-full bg-primary hover:bg-primary/90 h-9 text-sm" data-testid="open-email-dialog">
+                    <Button className="w-full rounded-full bg-primary hover:bg-primary/90 h-9 text-sm" data-testid="open-share-dialog">
                       <Send className="w-3.5 h-3.5 mr-2" />
-                      Envoyer
+                      Partager
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle className="font-serif text-xl">Envoyer la recette</DialogTitle>
-                      <DialogDescription>La recette sera envoyée dans un format élégant.</DialogDescription>
+                      <DialogTitle className="font-serif text-xl">Partager la recette</DialogTitle>
+                      <DialogDescription>Choisissez comment partager "{recipe?.title}"</DialogDescription>
                     </DialogHeader>
                     
-                    <form onSubmit={handleSendEmail} className="space-y-4 mt-4">
-                      <Input
-                        type="email"
-                        placeholder="email@exemple.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="h-11"
-                        data-testid="email-input"
-                        disabled={isSending}
-                      />
+                    <div className="space-y-3 mt-4">
+                      {/* Native Share (mobile) */}
+                      {typeof navigator !== 'undefined' && navigator.share && (
+                        <Button 
+                          onClick={handleShareNative} 
+                          className="w-full rounded-full h-11 justify-start"
+                          data-testid="share-native-btn"
+                        >
+                          <Smartphone className="w-4 h-4 mr-3" />
+                          Partager via une application
+                        </Button>
+                      )}
                       
-                      <DialogFooter className="gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="rounded-full">
-                          Annuler
-                        </Button>
-                        <Button type="submit" disabled={isSending} className="rounded-full bg-primary hover:bg-primary/90" data-testid="send-email-button">
-                          {isSending ? "Envoi..." : "Envoyer"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
+                      {/* Email */}
+                      <Button 
+                        onClick={handleShareEmail} 
+                        variant="outline"
+                        className="w-full rounded-full h-11 justify-start"
+                        data-testid="share-email-btn"
+                      >
+                        <Mail className="w-4 h-4 mr-3" />
+                        Envoyer par email
+                      </Button>
+                      
+                      {/* Copy */}
+                      <Button 
+                        onClick={handleCopyToClipboard} 
+                        variant="outline"
+                        className="w-full rounded-full h-11 justify-start"
+                        data-testid="copy-recipe-btn"
+                      >
+                        <Copy className="w-4 h-4 mr-3" />
+                        Copier dans le presse-papier
+                      </Button>
+                    </div>
+                    
+                    <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs text-stone-500 text-center">
+                        🍳 Un lien vers Cooking Capture sera inclus dans le partage
+                      </p>
+                    </div>
                   </DialogContent>
                 </Dialog>
               </Card>
