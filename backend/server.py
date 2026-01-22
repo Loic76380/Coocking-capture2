@@ -160,6 +160,7 @@ class RecipeUpdate(BaseModel):
     servings: Optional[str] = None
     ingredients: Optional[List[Ingredient]] = None
     steps: Optional[List[RecipeStep]] = None
+    is_public: Optional[bool] = None
 
 class EmailRequest(BaseModel):
     recipient_email: EmailStr
