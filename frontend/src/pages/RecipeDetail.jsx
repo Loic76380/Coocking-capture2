@@ -528,6 +528,42 @@ const RecipeDetail = () => {
               )}
             </Card>
 
+            {/* Visibility Section */}
+            <Card className="p-4 mb-6 border-stone-100" data-testid="visibility-section">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isPublic ? (
+                    <Globe className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <EyeOff className="w-5 h-5 text-stone-400" />
+                  )}
+                  <div>
+                    <h3 className="font-medium text-foreground">Visibilité</h3>
+                    <p className="text-xs text-stone-500">
+                      {isPublic 
+                        ? "Visible dans le bandeau des dernières recettes" 
+                        : "Recette privée, visible uniquement par vous"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleTogglePublic(!isPublic)}
+                  disabled={isSavingVisibility}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                    isPublic ? 'bg-green-600' : 'bg-stone-200'
+                  } ${isSavingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  data-testid="visibility-toggle"
+                  aria-label={isPublic ? "Rendre privé" : "Rendre public"}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isPublic ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </Card>
+
             {/* Tags/Categories Section */}
             <Card className="p-4 mb-6 border-stone-100" data-testid="tags-section">
               <div className="flex items-center gap-2 mb-3">
