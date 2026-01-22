@@ -202,6 +202,11 @@ Application complète de gestion de recettes de cuisine permettant de récupére
     - Permettre le stockage local des recettes
   - Boutons : "Accepter" / "En savoir plus"
   - Ne pas afficher si déjà accepté (mémoriser le choix)
+- [ ] **Corriger envoi recettes par email** : Le processus actuel bloque
+  - Nouvelle approche : formater la recette en texte/HTML propre
+  - Utiliser le client email de l'utilisateur (mailto: ou API Web Share)
+  - Laisser l'utilisateur choisir son application d'envoi (Gmail, Outlook, etc.)
+  - Avantages : pas de dépendance à Resend, fonctionne toujours, plus flexible
 - [ ] **Conformité RGPD complète** :
   - Droit d'accès : voir toutes ses données ✅ (via export)
   - Droit de rectification : modifier ses données (à implémenter côté admin)
