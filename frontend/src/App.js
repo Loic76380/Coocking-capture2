@@ -13,6 +13,7 @@ import Legal from "@/pages/Legal";
 import Privacy from "@/pages/Privacy";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import CookieBanner from "@/components/CookieBanner";
 import InstallPWA from "@/components/InstallPWA";
 
 // Protected Route wrapper
