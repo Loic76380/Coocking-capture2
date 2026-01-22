@@ -8,7 +8,7 @@ import os
 import io
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://recipe-box-7.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://recipe-box-10.preview.emergentagent.com').rstrip('/')
 API = f"{BASE_URL}/api"
 
 # Test credentials
