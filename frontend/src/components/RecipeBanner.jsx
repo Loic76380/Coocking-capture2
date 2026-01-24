@@ -153,8 +153,34 @@ const RecipeBanner = () => {
     );
   }
 
+  // Show banner even with no recipes - with a message to encourage sharing
   if (recipes.length === 0) {
-    return null;
+    return (
+      <div className="w-full bg-gradient-to-r from-amber-50/80 via-white to-orange-50/80 border-b border-stone-200/60 shadow-sm" data-testid="recipe-banner">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+          <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                <ChefHat className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                  Recettes partagées
+                </span>
+                <span className="text-[10px] text-stone-500">
+                  Communauté culinaire
+                </span>
+              </div>
+            </div>
+            <div className="flex-1 text-center">
+              <span className="text-xs text-stone-500 italic">
+                Soyez le premier à partager une recette ! Rendez vos recettes publiques pour les voir ici.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
