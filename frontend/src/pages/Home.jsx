@@ -82,10 +82,47 @@ const Home = () => {
       navigate(`/recipe/${response.data.id}`);
     } catch (error) {
       console.error("Extraction error:", error);
+      const status = error.response?.status;
+      const message = error.response?.data?.detail || "Erreur lors de l'extraction";
+      
+      // If site blocks scraping (403), offer text paste alternative
+      if (status === 403 || message.includes("bloque")) {
+        setFailedUrl(cleanUrl);
+        setShowTextDialog(true);
+        toast.error("Site protégé - Utilisez l'alternative proposée");
+      } else {
+        toast.error(message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExtractFromText = async () => {
+    if (!pastedText.trim()) {
+      toast.error("Veuillez coller le contenu de la recette");
+      return;
+    }
+    
+    setIsExtractingText(true);
+    
+    try {
+      const response = await axios.post(`${API}/recipes/extract-text`, {
+        text: pastedText,
+        source_url: failedUrl || null
+      }, { timeout: 60000 });
+      
+      toast.success("Recette extraite !");
+      setShowTextDialog(false);
+      setPastedText("");
+      setFailedUrl("");
+      navigate(`/recipe/${response.data.id}`);
+    } catch (error) {
+      console.error("Text extraction error:", error);
       const message = error.response?.data?.detail || "Erreur lors de l'extraction";
       toast.error(message);
     } finally {
-      setIsLoading(false);
+      setIsExtractingText(false);
     }
   };
 
