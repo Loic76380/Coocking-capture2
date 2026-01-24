@@ -958,7 +958,18 @@ Format de réponse EXACT (JSON uniquement):
         
         import json
         import re
-        response_text = response.text.strip()
+        # Response is a string directly
+        response_text = response.strip() if isinstance(response, str) else response.text.strip()
+        
+        # Clean markdown code blocks if present
+        if response_text.startswith('```json'):
+            response_text = response_text[7:]
+        if response_text.startswith('```'):
+            response_text = response_text[3:]
+        if response_text.endswith('```'):
+            response_text = response_text[:-3]
+        response_text = response_text.strip()
+        
         json_match = re.search(r'\{[\s\S]*\}', response_text)
         if json_match:
             recipe_data = json.loads(json_match.group())
