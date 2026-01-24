@@ -954,7 +954,7 @@ Format de réponse EXACT (JSON uniquement):
   ]
 }}"""
 
-        response = await asyncio.to_thread(chat.send_message, UserMessage(text=prompt))
+        response = await chat.send_message(UserMessage(text=prompt))
         
         import json
         import re
