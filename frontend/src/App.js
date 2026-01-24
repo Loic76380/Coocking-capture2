@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import Home from "@/pages/Home";
 import Directory from "@/pages/Directory";
 import RecipeDetail from "@/pages/RecipeDetail";
+import PublicRecipe from "@/pages/PublicRecipe";
 import Auth from "@/pages/Auth";
 import Account from "@/pages/Account";
 import ResetPassword from "@/pages/ResetPassword";
