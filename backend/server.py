@@ -914,6 +914,85 @@ async def extract_recipe(input: RecipeCreate, current_user: dict = Depends(get_c
         logger.error(f"Error extracting recipe: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'extraction: {str(e)}")
 
+@api_router.post("/recipes/extract-text", response_model=Recipe)
+async def extract_recipe_from_text(input: RecipeFromTextCreate, current_user: dict = Depends(get_current_user)):
+    """Extract recipe from pasted text (for sites that block scraping)"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    api_key = os.environ.get('EMERGENT_LLM_KEY')
+    if not api_key:
+        raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")
+    
+    if len(input.text) < 50:
+        raise HTTPException(status_code=400, detail="Le texte est trop court. Copiez tout le contenu de la recette.")
+    
+    try:
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"recipe-text-{uuid.uuid4()}",
+            system_message="""Tu es un assistant expert en extraction de recettes de cuisine.
+Analyse le texte fourni et extrais les informations de la recette au format JSON.
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ou après."""
+        )
+        
+        prompt = f"""Analyse ce texte et extrais la recette au format JSON:
+
+{input.text[:10000]}
+
+Format de réponse EXACT (JSON uniquement):
+{{
+  "title": "Nom de la recette",
+  "description": "Description courte",
+  "prep_time": "Temps de préparation",
+  "cook_time": "Temps de cuisson",
+  "servings": "Nombre de portions",
+  "ingredients": [
+    {{"name": "Ingrédient", "quantity": "Quantité", "unit": "Unité"}}
+  ],
+  "steps": [
+    {{"step_number": 1, "instruction": "Instruction"}}
+  ]
+}}"""
+
+        response = await asyncio.to_thread(chat.send_message, UserMessage(text=prompt))
+        
+        import json
+        import re
+        response_text = response.text.strip()
+        json_match = re.search(r'\{[\s\S]*\}', response_text)
+        if json_match:
+            recipe_data = json.loads(json_match.group())
+        else:
+            raise ValueError("Impossible d'extraire les données JSON")
+        
+        recipe = Recipe(
+            user_id=current_user['id'],
+            title=recipe_data.get('title', 'Recette extraite'),
+            description=recipe_data.get('description'),
+            source_url=input.source_url,
+            source_type="text",
+            prep_time=recipe_data.get('prep_time'),
+            cook_time=recipe_data.get('cook_time'),
+            servings=recipe_data.get('servings'),
+            ingredients=[Ingredient(**ing) for ing in recipe_data.get('ingredients', [])],
+            steps=[RecipeStep(**step) for step in recipe_data.get('steps', [])],
+            tags=[]
+        )
+        
+        doc = recipe.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.recipes.insert_one(doc)
+        
+        logger.info(f"Recipe extracted from text: {recipe.title}")
+        return recipe
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parse error: {e}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'analyse de la recette. Essayez avec un texte plus complet.")
+    except Exception as e:
+        logger.error(f"Error extracting from text: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'extraction: {str(e)}")
+
 @api_router.post("/recipes/manual", response_model=Recipe)
 async def create_manual_recipe(input: RecipeManualCreate, current_user: dict = Depends(get_current_user)):
     """Create a manual recipe"""
