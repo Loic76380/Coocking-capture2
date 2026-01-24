@@ -294,12 +294,6 @@ const Home = () => {
                 Connexion requise pour extraire des recettes
               </p>
             )}
-            </div>
-            
-            {/* Recipe Sidebar - Visible on all screens */}
-            <div className="flex-shrink-0 w-full lg:w-64 order-first lg:order-last">
-              <RecipeSidebar />
-            </div>
           </div>
         </div>
       </section>
