@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ChefHat, ExternalLink, Mail, ChevronLeft, ChevronRight, Lock } from "lucide-react";
@@ -24,6 +24,7 @@ const RecipeBanner = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const scrollRef = useRef(null);
+  const autoScrollRef = useRef(null);
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
@@ -31,29 +32,41 @@ const RecipeBanner = () => {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [requestForm, setRequestForm] = useState({ name: "", email: "", message: "" });
   const [isSending, setIsSending] = useState(false);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     loadPublicRecipes();
   }, []);
 
+  // Auto-scroll effect
   useEffect(() => {
-    checkScrollButtons();
-    const scrollElement = scrollRef.current;
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', checkScrollButtons);
-      return () => scrollElement.removeEventListener('scroll', checkScrollButtons);
-    }
-  }, [recipes]);
+    if (recipes.length <= 1 || isPaused) return;
 
-  const checkScrollButtons = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+    const startAutoScroll = () => {
+      autoScrollRef.current = setInterval(() => {
+        if (scrollRef.current && !isPaused) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+          const maxScroll = scrollWidth - clientWidth;
+          
+          if (scrollLeft >= maxScroll - 10) {
+            // Reset to beginning smoothly
+            scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            // Scroll by one card width
+            scrollRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+          }
+        }
+      }, 3000); // Scroll every 3 seconds
+    };
+
+    startAutoScroll();
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [recipes.length, isPaused]);
 
   const loadPublicRecipes = async () => {
     try {
@@ -68,13 +81,16 @@ const RecipeBanner = () => {
 
   const scroll = (direction) => {
     if (scrollRef.current) {
-      const scrollAmount = 300;
+      const scrollAmount = 250;
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
       });
     }
   };
+
+  const handleMouseEnter = () => setIsPaused(true);
+  const handleMouseLeave = () => setIsPaused(false);
 
   const handleRecipeClick = (recipe) => {
     if (!isAuthenticated) {
@@ -128,7 +144,7 @@ const RecipeBanner = () => {
           <div className="flex items-center gap-2">
             <div className="animate-pulse flex gap-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-24 h-8 bg-stone-200 rounded-full" />
+                <div key={i} className="w-32 h-10 bg-stone-200 rounded-full" />
               ))}
             </div>
           </div>
@@ -144,32 +160,45 @@ const RecipeBanner = () => {
   return (
     <>
       {/* Banner Container */}
-      <div className="w-full bg-gradient-to-r from-primary/5 via-white to-primary/5 border-b border-stone-200/50" data-testid="recipe-banner">
+      <div 
+        className="w-full bg-gradient-to-r from-amber-50/80 via-white to-orange-50/80 border-b border-stone-200/60 shadow-sm" 
+        data-testid="recipe-banner"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className="max-w-7xl mx-auto px-2 sm:px-4">
-          <div className="flex items-center gap-2 py-2">
-            {/* Title - Hidden on mobile, visible on tablet+ */}
-            <div className="hidden sm:flex items-center gap-2 flex-shrink-0 pr-3 border-r border-stone-200">
-              <ChefHat className="w-4 h-4 text-primary" />
-              <span className="text-xs font-medium text-stone-600 whitespace-nowrap">
-                Recettes partagées
-              </span>
+          <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5">
+            {/* Title - Tablet+ */}
+            <div className="hidden sm:flex items-center gap-2 flex-shrink-0 pr-3 border-r border-stone-200/80">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                <ChefHat className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                  Dernières recettes
+                </span>
+                <span className="text-[10px] text-stone-500">
+                  {recipes.length} partagée{recipes.length > 1 ? 's' : ''}
+                </span>
+              </div>
             </div>
 
             {/* Mobile Title */}
-            <div className="sm:hidden flex items-center gap-1 flex-shrink-0">
-              <ChefHat className="w-3 h-3 text-primary" />
+            <div className="sm:hidden flex items-center gap-1.5 flex-shrink-0 pr-2 border-r border-stone-200/80">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                <ChefHat className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-[10px] font-medium text-stone-600">{recipes.length}</span>
             </div>
 
-            {/* Scroll Left Button */}
-            {canScrollLeft && (
-              <button
-                onClick={() => scroll('left')}
-                className="hidden md:flex w-6 h-6 items-center justify-center rounded-full bg-white shadow-sm border border-stone-200 hover:bg-stone-50 flex-shrink-0"
-                aria-label="Défiler à gauche"
-              >
-                <ChevronLeft className="w-4 h-4 text-stone-600" />
-              </button>
-            )}
+            {/* Scroll Left Button - Desktop only */}
+            <button
+              onClick={() => scroll('left')}
+              className="hidden lg:flex w-7 h-7 items-center justify-center rounded-full bg-white/80 shadow-sm border border-stone-200 hover:bg-white hover:shadow transition-all flex-shrink-0"
+              aria-label="Défiler à gauche"
+            >
+              <ChevronLeft className="w-4 h-4 text-stone-600" />
+            </button>
 
             {/* Scrollable Recipe List */}
             <div
@@ -177,16 +206,16 @@ const RecipeBanner = () => {
               className="flex-1 overflow-x-auto scrollbar-hide scroll-smooth"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex gap-2 sm:gap-3">
+              <div className="flex gap-2 sm:gap-2.5">
                 {recipes.map((recipe, index) => (
                   <button
                     key={recipe.id}
                     onClick={() => handleRecipeClick(recipe)}
-                    className="group flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-white rounded-full border border-stone-200/80 hover:border-primary/50 hover:shadow-sm transition-all flex-shrink-0"
+                    className="group flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white/90 backdrop-blur-sm rounded-full border border-stone-200/80 hover:border-primary/40 hover:bg-white hover:shadow-md transition-all flex-shrink-0"
                     data-testid={`banner-recipe-${index}`}
                   >
-                    {/* Photo - Hidden on mobile, visible on tablet+ */}
-                    <div className="hidden sm:block w-7 h-7 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/30 flex-shrink-0">
+                    {/* Photo - Tablet+ */}
+                    <div className="hidden sm:block w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-100 to-orange-100 flex-shrink-0 ring-2 ring-white shadow-sm">
                       {recipe.image_url ? (
                         <img
                           src={`${BACKEND_URL}${recipe.image_url}`}
@@ -195,29 +224,29 @@ const RecipeBanner = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <ChefHat className="w-3 h-3 text-primary/50" />
+                          <span className="text-sm">🍽️</span>
                         </div>
                       )}
                     </div>
 
                     {/* Recipe Info */}
                     <div className="flex flex-col items-start min-w-0">
-                      <span className="text-xs font-medium text-foreground truncate max-w-[100px] sm:max-w-[120px]">
+                      <span className="text-xs font-medium text-foreground truncate max-w-[80px] sm:max-w-[110px] group-hover:text-primary transition-colors">
                         {recipe.title}
                       </span>
-                      <span className="text-[10px] text-stone-500 truncate max-w-[100px] sm:max-w-[120px]">
+                      <span className="text-[10px] text-stone-500 truncate max-w-[80px] sm:max-w-[110px]">
                         par {recipe.user_name}
                       </span>
                     </div>
 
-                    {/* Action Icon */}
-                    <div className="hidden sm:flex w-5 h-5 items-center justify-center rounded-full bg-stone-100 group-hover:bg-primary/10 transition-colors flex-shrink-0">
+                    {/* Action Icon - Tablet+ */}
+                    <div className="hidden sm:flex w-6 h-6 items-center justify-center rounded-full bg-stone-100/80 group-hover:bg-primary/10 transition-colors flex-shrink-0">
                       {!isAuthenticated ? (
-                        <Lock className="w-2.5 h-2.5 text-stone-400 group-hover:text-primary" />
+                        <Lock className="w-3 h-3 text-stone-400 group-hover:text-primary" />
                       ) : recipe.source_type === "url" ? (
-                        <ExternalLink className="w-2.5 h-2.5 text-stone-400 group-hover:text-primary" />
+                        <ExternalLink className="w-3 h-3 text-stone-400 group-hover:text-primary" />
                       ) : (
-                        <Mail className="w-2.5 h-2.5 text-stone-400 group-hover:text-primary" />
+                        <Mail className="w-3 h-3 text-stone-400 group-hover:text-primary" />
                       )}
                     </div>
                   </button>
@@ -225,16 +254,14 @@ const RecipeBanner = () => {
               </div>
             </div>
 
-            {/* Scroll Right Button */}
-            {canScrollRight && (
-              <button
-                onClick={() => scroll('right')}
-                className="hidden md:flex w-6 h-6 items-center justify-center rounded-full bg-white shadow-sm border border-stone-200 hover:bg-stone-50 flex-shrink-0"
-                aria-label="Défiler à droite"
-              >
-                <ChevronRight className="w-4 h-4 text-stone-600" />
-              </button>
-            )}
+            {/* Scroll Right Button - Desktop only */}
+            <button
+              onClick={() => scroll('right')}
+              className="hidden lg:flex w-7 h-7 items-center justify-center rounded-full bg-white/80 shadow-sm border border-stone-200 hover:bg-white hover:shadow transition-all flex-shrink-0"
+              aria-label="Défiler à droite"
+            >
+              <ChevronRight className="w-4 h-4 text-stone-600" />
+            </button>
           </div>
         </div>
       </div>
