@@ -141,6 +141,10 @@ class Recipe(BaseModel):
 class RecipeCreate(BaseModel):
     url: str
 
+class RecipeFromTextCreate(BaseModel):
+    text: str
+    source_url: Optional[str] = None
+
 class RecipeManualCreate(BaseModel):
     title: str
     description: Optional[str] = None
