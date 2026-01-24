@@ -435,14 +435,53 @@ Réponds UNIQUEMENT avec le JSON de la recette extraite."""
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'analyse: {str(e)}")
 
 async def fetch_webpage(url: str) -> str:
-    """Fetch webpage content"""
+    """Fetch webpage content with browser-like headers to avoid 403 errors"""
+    import random
+    
+    # Liste de User-Agents réalistes (navigateurs récents)
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    ]
+    
+    # Headers complets pour simuler un vrai navigateur
+    headers = {
+        'User-Agent': random.choice(user_agents),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
+    }
+    
     async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as http_client:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        response = await http_client.get(url, headers=headers)
-        response.raise_for_status()
-        return response.text
+        try:
+            response = await http_client.get(url, headers=headers)
+            response.raise_for_status()
+            return response.text
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403:
+                # Essayer avec un autre User-Agent
+                headers['User-Agent'] = random.choice(user_agents)
+                try:
+                    response = await http_client.get(url, headers=headers)
+                    response.raise_for_status()
+                    return response.text
+                except httpx.HTTPStatusError:
+                    raise HTTPException(
+                        status_code=403, 
+                        detail=f"Ce site ({url.split('/')[2]}) bloque l'extraction automatique. Essayez de créer la recette manuellement ou d'importer une capture d'écran."
+                    )
+            raise
 
 def extract_text_from_html(html: str) -> str:
     """Extract readable text from HTML"""
