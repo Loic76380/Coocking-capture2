@@ -798,10 +798,18 @@ async def reset_password(input: ResetPasswordRequest):
 
 @api_router.get("/recipes/public/recent")
 async def get_public_recent_recipes():
-    """Get recent public recipes for the sidebar (no auth required)"""
-    # Get recipes marked as public, sorted by date
+    """Get recent public recipes for the sidebar (no auth required)
+    - URL recipes: always public (appear by default)
+    - Manual/document recipes: only if is_public=True
+    """
+    # Query: URL recipes OR (manual/document with is_public=True)
     cursor = db.recipes.find(
-        {"is_public": True},
+        {
+            "$or": [
+                {"source_type": "url"},  # URL recipes are always public
+                {"source_type": {"$in": ["manual", "document", "text"]}, "is_public": True}  # Manual only if shared
+            ]
+        },
         {"_id": 0, "id": 1, "title": 1, "image_url": 1, "source_url": 1, "source_type": 1, "user_id": 1}
     ).sort("created_at", -1).limit(20)
     
@@ -813,6 +821,81 @@ async def get_public_recent_recipes():
         recipe["user_name"] = user.get("name", "Anonyme") if user else "Anonyme"
     
     return {"recipes": recipes}
+
+@api_router.get("/recipes/public/{recipe_id}")
+async def get_public_recipe(recipe_id: str):
+    """Get a single public recipe (for public viewing page)"""
+    recipe = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
+    
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    # Check if recipe is publicly accessible
+    source_type = recipe.get("source_type", "")
+    is_public = recipe.get("is_public", False)
+    
+    if source_type != "url" and not is_public:
+        raise HTTPException(status_code=403, detail="Cette recette n'est pas partagée publiquement")
+    
+    # Add owner info
+    user = await db.users.find_one({"id": recipe.get("user_id")}, {"_id": 0, "name": 1})
+    recipe["user_name"] = user.get("name", "Anonyme") if user else "Anonyme"
+    
+    # Convert datetime if needed
+    if "created_at" in recipe and hasattr(recipe["created_at"], "isoformat"):
+        recipe["created_at"] = recipe["created_at"].isoformat()
+    
+    return recipe
+
+@api_router.post("/recipes/copy/{recipe_id}")
+async def copy_recipe_to_account(recipe_id: str, current_user: dict = Depends(get_current_user)):
+    """Copy a public recipe to user's account"""
+    # Get original recipe
+    original = await db.recipes.find_one({"id": recipe_id}, {"_id": 0})
+    
+    if not original:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    # Check if publicly accessible
+    source_type = original.get("source_type", "")
+    is_public = original.get("is_public", False)
+    
+    if source_type != "url" and not is_public:
+        raise HTTPException(status_code=403, detail="Cette recette n'est pas partagée publiquement")
+    
+    # Check if user already has this recipe
+    existing = await db.recipes.find_one({
+        "user_id": current_user["id"],
+        "title": original.get("title"),
+        "source_url": original.get("source_url")
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Vous avez déjà cette recette dans votre collection")
+    
+    # Create copy
+    new_recipe = Recipe(
+        user_id=current_user["id"],
+        title=original.get("title", "Recette copiée"),
+        description=original.get("description"),
+        source_url=original.get("source_url"),
+        source_type="copied",
+        image_url=original.get("image_url"),
+        prep_time=original.get("prep_time"),
+        cook_time=original.get("cook_time"),
+        servings=original.get("servings"),
+        ingredients=[Ingredient(**ing) for ing in original.get("ingredients", [])],
+        steps=[RecipeStep(**step) for step in original.get("steps", [])],
+        tags=[],
+        is_public=False  # Copied recipes are private by default
+    )
+    
+    doc = new_recipe.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    await db.recipes.insert_one(doc)
+    
+    logger.info(f"Recipe {recipe_id} copied to user {current_user['id']}")
+    return {"status": "success", "message": "Recette ajoutée à votre collection", "recipe_id": new_recipe.id}
 
 # ==================== FILTER ROUTES ====================
 
