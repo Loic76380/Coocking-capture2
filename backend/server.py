@@ -892,9 +892,20 @@ async def extract_recipe(input: RecipeCreate, current_user: dict = Depends(get_c
         logger.info(f"Recipe saved: {recipe.title}")
         return recipe
         
+    except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP status error: {e.response.status_code}")
+        if e.response.status_code == 403:
+            domain = input.url.split('/')[2] if '/' in input.url else input.url
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Le site '{domain}' bloque l'extraction automatique. Alternatives : créez la recette manuellement ou importez une capture d'écran de la page."
+            )
+        raise HTTPException(status_code=400, detail=f"Impossible d'accéder à l'URL (erreur {e.response.status_code})")
     except httpx.HTTPError as e:
         logger.error(f"HTTP error: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Impossible d'accéder à l'URL: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error extracting recipe: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'extraction: {str(e)}")
