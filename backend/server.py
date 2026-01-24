@@ -1236,6 +1236,103 @@ async def send_contact_message(contact: ContactRequest):
         logger.error(f"Failed to send contact message: {str(e)}")
         raise HTTPException(status_code=500, detail="Erreur lors de l'envoi du message")
 
+# ==================== RECIPE REQUEST ROUTE ====================
+
+@api_router.post("/recipes/{recipe_id}/request")
+async def request_recipe(recipe_id: str, request: RecipeRequestModel):
+    """Send a recipe request to the recipe owner"""
+    # Find the recipe
+    recipe = recipes_collection.find_one({"id": recipe_id})
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    # Find the recipe owner
+    owner = users_collection.find_one({"id": recipe["user_id"]})
+    if not owner:
+        raise HTTPException(status_code=404, detail="Propriétaire de la recette non trouvé")
+    
+    owner_email = owner.get("email")
+    owner_name = owner.get("name", "Utilisateur")
+    recipe_title = recipe.get("title", "Recette")
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family: 'Segoe UI', sans-serif; background-color: #F9F8F6; margin: 0; padding: 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <tr>
+                <td style="background: linear-gradient(135deg, #3A5A40 0%, #344E41 100%); padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0; color: #FFFFFF; font-size: 22px;">🍽️ Demande de recette</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 30px;">
+                    <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                        Bonjour <strong>{owner_name}</strong>,
+                    </p>
+                    <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                        Quelqu'un souhaite recevoir votre recette <strong style="color: #3A5A40;">"{recipe_title}"</strong> !
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #3A5A40;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="padding: 8px 0;">
+                                    <strong style="color: #666;">Nom :</strong> 
+                                    <span style="color: #333;">{request.name}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0;">
+                                    <strong style="color: #666;">Email :</strong> 
+                                    <a href="mailto:{request.email}" style="color: #3A5A40; text-decoration: none;">{request.email}</a>
+                                </td>
+                            </tr>
+                        </table>
+                        {f'<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;"><strong style="color: #666;">Message :</strong><p style="color: #333; margin-top: 8px; white-space: pre-wrap;">{request.message}</p></div>' if request.message else ''}
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #666; margin-top: 25px;">
+                        Vous pouvez répondre directement à cet email pour partager votre recette avec {request.name}.
+                    </p>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <a href="mailto:{request.email}?subject=Votre demande de recette : {recipe_title}" 
+                           style="display: inline-block; background: #3A5A40; color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 600;">
+                            📧 Répondre à {request.name}
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="background: #f5f5f5; padding: 20px; text-align: center; border-radius: 0 0 8px 8px;">
+                    <p style="margin: 0; font-size: 12px; color: #888;">
+                        Message envoyé depuis <a href="https://coocking-capture.fr" style="color: #3A5A40;">Cooking Capture</a>
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [owner_email],
+        "subject": f"🍽️ Demande de recette : {recipe_title}",
+        "html": html_content,
+        "reply_to": request.email
+    }
+    
+    try:
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Recipe request sent to {owner_email} for recipe {recipe_id} from {request.email}")
+        return {"status": "success", "message": "Demande envoyée au propriétaire de la recette"}
+    except Exception as e:
+        logger.error(f"Failed to send recipe request: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erreur lors de l'envoi de la demande")
+
 # ==================== ADMIN ROUTES ====================
 
 async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
