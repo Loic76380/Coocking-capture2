@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Search, ArrowRight, Utensils, Clock, Users, Sparkles, Lock, Upload, FileText, Image, File } from "lucide-react";
-import RecipeSidebar from "@/components/RecipeSidebar";
+import RecipeBanner from "@/components/RecipeBanner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
