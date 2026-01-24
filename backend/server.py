@@ -1242,12 +1242,12 @@ async def send_contact_message(contact: ContactRequest):
 async def request_recipe(recipe_id: str, request: RecipeRequestModel):
     """Send a recipe request to the recipe owner"""
     # Find the recipe
-    recipe = recipes_collection.find_one({"id": recipe_id})
+    recipe = await db.recipes.find_one({"id": recipe_id})
     if not recipe:
         raise HTTPException(status_code=404, detail="Recette non trouvée")
     
     # Find the recipe owner
-    owner = users_collection.find_one({"id": recipe["user_id"]})
+    owner = await db.users.find_one({"id": recipe["user_id"]})
     if not owner:
         raise HTTPException(status_code=404, detail="Propriétaire de la recette non trouvé")
     
