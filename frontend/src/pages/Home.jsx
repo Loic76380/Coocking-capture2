@@ -158,12 +158,13 @@ const Home = () => {
 
   return (
     <div className="min-h-[calc(100vh-56px)]" data-testid="home-page">
-      {/* Hero Section with Sidebar */}
+      {/* Recipe Banner - Top of page, visible for everyone */}
+      <RecipeBanner />
+      
+      {/* Hero Section */}
       <section className="hero-gradient py-10 md:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Main Content */}
-            <div className="flex-1 max-w-3xl lg:mx-0 mx-auto text-center animate-fade-in">
+          <div className="max-w-3xl mx-auto text-center animate-fade-in">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/30 text-primary text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
