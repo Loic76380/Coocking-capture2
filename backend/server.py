@@ -204,6 +204,11 @@ class ContactRequest(BaseModel):
     subject: Optional[str] = ""
     message: str
 
+class RecipeRequestModel(BaseModel):
+    name: str
+    email: EmailStr
+    message: Optional[str] = ""
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
