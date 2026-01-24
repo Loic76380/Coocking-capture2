@@ -111,6 +111,7 @@ function AppContent() {
             <Route path="/legal" element={<Legal />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/public/recipe/:id" element={<PublicRecipe />} />
           </Routes>
         </main>
         <Footer />
