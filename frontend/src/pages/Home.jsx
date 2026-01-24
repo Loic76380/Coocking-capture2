@@ -6,7 +6,16 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Search, ArrowRight, Utensils, Clock, Users, Sparkles, Lock, Upload, FileText, Image, File } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Search, ArrowRight, Utensils, Clock, Users, Sparkles, Lock, Upload, FileText, Image, File, ClipboardPaste } from "lucide-react";
 import RecipeBanner from "@/components/RecipeBanner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -17,6 +26,10 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showTextDialog, setShowTextDialog] = useState(false);
+  const [pastedText, setPastedText] = useState("");
+  const [failedUrl, setFailedUrl] = useState("");
+  const [isExtractingText, setIsExtractingText] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
