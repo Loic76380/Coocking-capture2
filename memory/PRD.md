@@ -42,12 +42,14 @@ Application complète de gestion de recettes de cuisine permettant de récupére
 
 ### Phase 8 - P1 Features Batch (22 January 2026)
 
-#### Bandeau Latéral des Dernières Recettes
-- [x] Composant `RecipeSidebar.jsx` créé avec liste scrollable
-- [x] Intégration dans `Home.jsx` (visible sur desktop, caché mobile)
-- [x] API `GET /api/recipes/public/recent` retourne recettes publiques
-- [x] Clic sur recette URL → ouvre le site d'origine
-- [x] Clic sur recette manuelle → dialogue de demande de recette
+#### Bandeau des Dernières Recettes (V2 - 24 January 2026)
+- [x] Composant `RecipeBanner.jsx` créé - bandeau horizontal en haut
+- [x] Défile horizontalement avec boutons navigation (desktop)
+- [x] **Mobile (GSM)** : Discret, texte uniquement (titre + prénom)
+- [x] **Tablette/Desktop** : Photo circulaire + titre + prénom + icône action
+- [x] Visible **sans connexion** mais clic demande authentification
+- [x] Dialogue "Connexion requise" avec redirection vers login
+- [x] Demande de recette via formulaire (recettes manuelles)
 
 #### Toggle Visibilité Public/Privé
 - [x] Section "Visibilité" ajoutée dans `RecipeDetail.jsx`
