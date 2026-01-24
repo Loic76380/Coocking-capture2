@@ -121,13 +121,13 @@ const RecipeBanner = () => {
 
     setIsSending(true);
     try {
-      await axios.post(`${API}/contact`, {
+      // Send request directly to recipe owner
+      await axios.post(`${API}/recipes/${selectedRecipe?.id}/request`, {
         name: requestForm.name,
         email: requestForm.email,
-        subject: `Demande de recette : ${selectedRecipe?.title}`,
-        message: `Bonjour,\n\nJe souhaiterais recevoir la recette "${selectedRecipe?.title}" créée par ${selectedRecipe?.user_name}.\n\n${requestForm.message || ''}\n\nMerci !`
+        message: requestForm.message || ""
       });
-      toast.success("Demande envoyée !");
+      toast.success("Demande envoyée au propriétaire !");
       setRequestDialogOpen(false);
       setRequestForm({ name: "", email: "", message: "" });
     } catch (error) {
