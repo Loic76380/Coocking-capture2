@@ -390,6 +390,80 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Text Paste Dialog - For blocked sites */}
+      <Dialog open={showTextDialog} onOpenChange={setShowTextDialog}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardPaste className="w-5 h-5 text-primary" />
+              Site protégé - Alternative
+            </DialogTitle>
+            <DialogDescription>
+              Ce site bloque l'extraction automatique. Copiez-collez le contenu de la recette ci-dessous.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <h4 className="font-medium text-amber-800 mb-2">📋 Comment faire :</h4>
+              <ol className="text-sm text-amber-700 space-y-1 list-decimal list-inside">
+                <li>Ouvrez la page de la recette dans votre navigateur</li>
+                <li>Sélectionnez tout le texte de la recette (Ctrl+A ou Cmd+A)</li>
+                <li>Copiez le texte (Ctrl+C ou Cmd+C)</li>
+                <li>Collez-le dans la zone ci-dessous (Ctrl+V ou Cmd+V)</li>
+              </ol>
+            </div>
+            
+            {failedUrl && (
+              <div className="text-sm text-stone-500">
+                URL d'origine : <a href={failedUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{failedUrl}</a>
+              </div>
+            )}
+            
+            <Textarea
+              placeholder="Collez ici le contenu de la recette (titre, ingrédients, instructions...)"
+              value={pastedText}
+              onChange={(e) => setPastedText(e.target.value)}
+              rows={12}
+              className="font-mono text-sm"
+            />
+            
+            <p className="text-xs text-stone-500">
+              L'IA analysera le texte et extraira automatiquement les ingrédients et étapes.
+            </p>
+          </div>
+          
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowTextDialog(false);
+                setPastedText("");
+                setFailedUrl("");
+              }}
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleExtractFromText}
+              disabled={isExtractingText || !pastedText.trim()}
+            >
+              {isExtractingText ? (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                  Extraction en cours...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Extraire la recette
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
