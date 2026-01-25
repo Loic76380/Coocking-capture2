@@ -401,11 +401,26 @@ Si une information n'est pas disponible, utilise null ou une chaîne vide."""
     ).with_model("openai", "gpt-4o")
     
     if is_image:
-        # For images, use vision capabilities
+        # For images, use vision capabilities with detailed prompt
         import base64
         b64_image = base64.b64encode(file_content).decode('utf-8')
         user_message = UserMessage(
-            text="Analyse cette image de recette et extrait toutes les informations. Réponds UNIQUEMENT avec le JSON de la recette.",
+            text="""Analyse attentivement cette image de recette de cuisine.
+
+INSTRUCTIONS:
+1. Identifie le TITRE de la recette (généralement en gros en haut)
+2. Trouve TOUS les ingrédients avec leurs quantités exactes
+3. Liste TOUTES les étapes de préparation dans l'ordre
+4. Note les temps de préparation et cuisson si visibles
+5. Note le nombre de portions si indiqué
+
+IMPORTANT: 
+- Lis attentivement TOUT le texte de l'image
+- Ne manque aucun ingrédient
+- Garde l'ordre exact des étapes
+- Si c'est une capture d'écran de site, extrait quand même toutes les informations
+
+Réponds UNIQUEMENT avec le JSON de la recette, sans texte avant ou après.""",
             images=[f"data:{content_type};base64,{b64_image}"]
         )
     else:
