@@ -63,6 +63,11 @@ const RecipeDetail = () => {
   const [editedSteps, setEditedSteps] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   
+  // Title edit state
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [isSavingTitle, setIsSavingTitle] = useState(false);
+  
   // Image upload states
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDeletingImage, setIsDeletingImage] = useState(false);
