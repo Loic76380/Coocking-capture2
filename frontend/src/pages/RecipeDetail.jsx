@@ -442,9 +442,61 @@ const RecipeDetail = () => {
           <div className="lg:col-span-8 animate-fade-in">
             {/* Header */}
             <div className="mb-6">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif font-semibold text-foreground tracking-tight leading-tight mb-3" data-testid="recipe-title">
-                {recipe.title}
-              </h1>
+              {/* Editable Title */}
+              {isEditingTitle ? (
+                <div className="flex items-center gap-2 mb-3">
+                  <Input
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    className="text-2xl md:text-3xl font-serif font-semibold flex-1"
+                    placeholder="Titre de la recette"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveTitle();
+                      if (e.key === 'Escape') {
+                        setIsEditingTitle(false);
+                        setEditedTitle(recipe.title);
+                      }
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSaveTitle}
+                    disabled={isSavingTitle}
+                    className="gap-1"
+                  >
+                    <Save className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setIsEditingTitle(false);
+                      setEditedTitle(recipe.title);
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 mb-3 group">
+                  <h1 
+                    className="text-2xl md:text-3xl lg:text-4xl font-serif font-semibold text-foreground tracking-tight leading-tight flex-1" 
+                    data-testid="recipe-title"
+                  >
+                    {recipe.title}
+                  </h1>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditingTitle(true)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Modifier le titre"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
               
               {recipe.description && (
                 <p className="text-base text-stone-600 leading-relaxed mb-4">{recipe.description}</p>
