@@ -735,29 +735,43 @@ const RecipeDetail = () => {
                 </h2>
                 <Button variant="outline" size="sm" onClick={addStep} className="rounded-full" data-testid="add-step-btn">
                   <Plus className="w-4 h-4 mr-1" />
-                  Ajouter
+                  Ajouter à la fin
                 </Button>
               </div>
               
-              <div className="space-y-3">
-                {editedSteps.map((step, index) => (
-                  <div 
-                    key={index}
-                    className="group flex gap-3 p-3 bg-white rounded-lg border border-stone-100 hover:border-stone-200 transition-colors"
-                    data-testid={`step-${step.step_number}`}
+              {/* Insert at beginning button */}
+              {editedSteps.length > 0 && (
+                <div className="flex justify-center py-1 mb-2 opacity-50 hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => insertStepAt(0)}
+                    className="flex items-center gap-1 text-xs text-stone-400 hover:text-primary transition-colors px-2 py-1 rounded-full hover:bg-primary/5"
+                    title="Insérer une étape au début"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm text-primary font-semibold">{step.step_number}</span>
-                    </div>
-                    
-                    {editingStep === index ? (
-                      <div className="flex-1 space-y-2">
-                        <Textarea
-                          value={step.instruction}
-                          onChange={(e) => updateStep(index, e.target.value)}
-                          className="min-h-[80px] text-sm"
-                          placeholder="Décrivez cette étape..."
-                          autoFocus
+                    <Plus className="w-3 h-3" />
+                    <span>Insérer au début</span>
+                  </button>
+                </div>
+              )}
+              
+              <div className="space-y-1">
+                {editedSteps.map((step, index) => (
+                  <div key={index}>
+                    <div 
+                      className="group flex gap-3 p-3 bg-white rounded-lg border border-stone-100 hover:border-stone-200 transition-colors"
+                      data-testid={`step-${step.step_number}`}
+                    >
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm text-primary font-semibold">{step.step_number}</span>
+                      </div>
+                      
+                      {editingStep === index ? (
+                        <div className="flex-1 space-y-2">
+                          <Textarea
+                            value={step.instruction}
+                            onChange={(e) => updateStep(index, e.target.value)}
+                            className="min-h-[80px] text-sm"
+                            placeholder="Décrivez cette étape..."
+                            autoFocus
                           data-testid={`edit-step-input-${index}`}
                         />
                         <div className="flex gap-2">
