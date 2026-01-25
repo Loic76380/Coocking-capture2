@@ -899,8 +899,8 @@ async def copy_recipe_to_account(recipe_id: str, current_user: dict = Depends(ge
         prep_time=original.get("prep_time"),
         cook_time=original.get("cook_time"),
         servings=original.get("servings"),
-        ingredients=[Ingredient(**ing) for ing in original.get("ingredients", [])],
-        steps=[RecipeStep(**step) for step in original.get("steps", [])],
+        ingredients=[Ingredient(**ing) for ing in (original.get("ingredients") or [])],
+        steps=[RecipeStep(**step) for step in (original.get("steps") or [])],
         tags=[],
         is_public=False  # Copied recipes are private by default
     )
