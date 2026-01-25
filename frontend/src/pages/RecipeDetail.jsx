@@ -756,6 +756,8 @@ const RecipeDetail = () => {
                           value={step.instruction}
                           onChange={(e) => updateStep(index, e.target.value)}
                           className="min-h-[80px] text-sm"
+                          placeholder="Décrivez cette étape..."
+                          autoFocus
                           data-testid={`edit-step-input-${index}`}
                         />
                         <div className="flex gap-2">
@@ -778,6 +780,7 @@ const RecipeDetail = () => {
                             size="icon" 
                             className="w-7 h-7"
                             onClick={() => setEditingStep(index)}
+                            title="Modifier"
                             data-testid={`edit-step-btn-${index}`}
                           >
                             <Pencil className="w-3 h-3" />
@@ -787,6 +790,7 @@ const RecipeDetail = () => {
                             size="icon" 
                             className="w-7 h-7 text-destructive hover:text-destructive"
                             onClick={() => deleteStep(index)}
+                            title="Supprimer"
                             data-testid={`delete-step-btn-${index}`}
                           >
                             <Trash2 className="w-3 h-3" />
@@ -795,7 +799,20 @@ const RecipeDetail = () => {
                       </div>
                     )}
                   </div>
-                ))}
+                  
+                  {/* Insert step button - appears between steps */}
+                  <div className="flex justify-center py-1 opacity-0 hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => insertStepAt(index + 1)}
+                      className="flex items-center gap-1 text-xs text-stone-400 hover:text-primary transition-colors px-2 py-1 rounded-full hover:bg-primary/5"
+                      title="Insérer une étape ici"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Insérer une étape</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
               </div>
             </section>
 
