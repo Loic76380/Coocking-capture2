@@ -36,9 +36,11 @@ const Navbar = () => {
             className="flex items-center gap-2 group"
             data-testid="logo-link"
           >
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center group-hover:scale-105 transition-transform">
-              <ChefHat className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <img 
+              src="/logo192.png" 
+              alt="Cooking Capture" 
+              className="w-8 h-8 rounded-lg group-hover:scale-105 transition-transform"
+            />
             <span className="font-serif text-lg font-semibold text-foreground hidden sm:block">
               Cooking Capture
             </span>
