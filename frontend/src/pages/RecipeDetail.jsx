@@ -183,8 +183,19 @@ const RecipeDetail = () => {
     return `${window.location.origin}/share-logo.png`;
   };
 
+  // Get public share link
+  const getShareLink = () => {
+    return `https://coocking-capture.fr/public/recipe/${recipe?.id}`;
+  };
+
+  // Simple share text with link only
+  const getSimpleShareText = () => {
+    return `🍳 ${recipe?.title}\n\nDécouvrez cette recette sur Cooking Capture :\n${getShareLink()}`;
+  };
+
   const handleShareEmail = () => {
-    const { subject, body } = formatRecipeForEmail();
+    const subject = `🍳 Recette : ${recipe?.title}`;
+    const body = getSimpleShareText();
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl, '_blank');
     toast.success("Ouverture de votre application email...");
@@ -197,18 +208,18 @@ const RecipeDetail = () => {
       return;
     }
     
-    const { subject, body } = formatRecipeForEmail();
     const imageUrl = getShareImageUrl();
+    const shareLink = getShareLink();
     
     try {
-      // Try to share with image
+      // Simple share data with just title, link and image
       const shareData = {
-        title: subject,
-        text: body,
-        url: recipe?.source_url || window.location.href
+        title: `🍳 ${recipe?.title}`,
+        text: `Découvrez cette recette sur Cooking Capture !`,
+        url: shareLink
       };
       
-      // Try to fetch and share image as file (for apps that support it)
+      // Try to include image as file
       try {
         const response = await fetch(imageUrl);
         const blob = await response.blob();
@@ -226,17 +237,16 @@ const RecipeDetail = () => {
       setIsDialogOpen(false);
     } catch (error) {
       if (error.name !== 'AbortError') {
-        // Fallback to mailto
         handleShareEmail();
       }
     }
   };
 
   const handleCopyToClipboard = async () => {
-    const { body } = formatRecipeForEmail();
+    const text = getSimpleShareText();
     try {
-      await navigator.clipboard.writeText(body);
-      toast.success("Recette copiée dans le presse-papier !");
+      await navigator.clipboard.writeText(text);
+      toast.success("Lien copié dans le presse-papier !");
     } catch (error) {
       toast.error("Impossible de copier");
     }
