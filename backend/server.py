@@ -764,7 +764,7 @@ async def forgot_password(input: ForgotPasswordRequest):
     reset_token = create_reset_token(user['id'])
     
     # Build reset URL (frontend URL)
-    frontend_url = os.environ.get('FRONTEND_URL', 'https://recipe-box-10.preview.emergentagent.com')
+    frontend_url = os.environ.get('FRONTEND_URL', 'https://cookbook-app-8.preview.emergentagent.com')
     reset_link = f"{frontend_url}/reset-password?token={reset_token}"
     
     # Generate email HTML
