@@ -90,6 +90,7 @@ const RecipeDetail = () => {
       setEditedIngredients(response.data.ingredients || []);
       setEditedSteps(response.data.steps || []);
       setIsPublic(response.data.is_public || false);
+      setEditedTitle(response.data.title || "");
     } catch (error) {
       console.error("Error fetching recipe:", error);
       toast.error("Recette non trouvée");
@@ -97,6 +98,39 @@ const RecipeDetail = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Save title
+  const handleSaveTitle = async () => {
+    if (!editedTitle.trim()) {
+      toast.error("Le titre ne peut pas être vide");
+      return;
+    }
+    
+    setIsSavingTitle(true);
+    try {
+      await axios.put(`${API}/recipes/${id}`, { title: editedTitle.trim() });
+      setRecipe({ ...recipe, title: editedTitle.trim() });
+      setIsEditingTitle(false);
+      toast.success("Titre modifié !");
+    } catch (error) {
+      toast.error("Erreur lors de la sauvegarde");
+    } finally {
+      setIsSavingTitle(false);
+    }
+  };
+
+  // Insert step at position
+  const insertStepAt = (index) => {
+    const newSteps = [...editedSteps];
+    newSteps.splice(index, 0, { step_number: index + 1, instruction: "" });
+    // Renumber all steps
+    const renumberedSteps = newSteps.map((step, i) => ({
+      ...step,
+      step_number: i + 1
+    }));
+    setEditedSteps(renumberedSteps);
+    setEditingStep(index);
   };
 
   // Format recipe for sharing
