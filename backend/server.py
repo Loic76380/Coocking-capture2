@@ -982,8 +982,8 @@ async def extract_recipe(input: RecipeCreate, current_user: dict = Depends(get_c
             prep_time=recipe_data.get('prep_time'),
             cook_time=recipe_data.get('cook_time'),
             servings=recipe_data.get('servings'),
-            ingredients=[Ingredient(**ing) for ing in recipe_data.get('ingredients', [])],
-            steps=[RecipeStep(**step) for step in recipe_data.get('steps', [])],
+            ingredients=[Ingredient(**ing) for ing in (recipe_data.get('ingredients') or [])],
+            steps=[RecipeStep(**step) for step in (recipe_data.get('steps') or [])],
             tags=[]
         )
         
