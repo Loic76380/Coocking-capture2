@@ -175,6 +175,14 @@ const RecipeDetail = () => {
     return { subject, body };
   };
 
+  // Get image URL for sharing
+  const getShareImageUrl = () => {
+    if (recipe?.image_url) {
+      return `${BACKEND_URL}${recipe.image_url}`;
+    }
+    return `${window.location.origin}/share-logo.png`;
+  };
+
   const handleShareEmail = () => {
     const { subject, body } = formatRecipeForEmail();
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -190,12 +198,30 @@ const RecipeDetail = () => {
     }
     
     const { subject, body } = formatRecipeForEmail();
+    const imageUrl = getShareImageUrl();
     
     try {
-      await navigator.share({
+      // Try to share with image
+      const shareData = {
         title: subject,
         text: body,
-      });
+        url: recipe?.source_url || window.location.href
+      };
+      
+      // Try to fetch and share image as file (for apps that support it)
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'recette.png', { type: 'image/png' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          shareData.files = [file];
+        }
+      } catch (imgError) {
+        console.log("Could not include image in share:", imgError);
+      }
+      
+      await navigator.share(shareData);
       toast.success("Recette partagée !");
       setIsDialogOpen(false);
     } catch (error) {
