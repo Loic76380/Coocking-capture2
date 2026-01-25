@@ -225,6 +225,9 @@ const Home = () => {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-semibold text-foreground tracking-tight leading-tight mb-4">
               Capturez vos recettes
               <span className="block text-primary">en un instant</span>
+              <span className="block text-xl sm:text-2xl lg:text-3xl text-stone-600 font-normal mt-2">
+                et créez votre boîte à recettes
+              </span>
             </h1>
             
             {/* Subtitle */}
